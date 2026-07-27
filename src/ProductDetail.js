@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FaImage, FaMinus, FaPlus } from 'react-icons/fa';
+import { FaMinus, FaPlus } from 'react-icons/fa';   // ✅ FaImage hata diya
 import './ProductDetail.css';
 import { useCart } from './context/CartContext';
 
