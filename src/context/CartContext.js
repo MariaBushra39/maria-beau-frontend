@@ -1,88 +1,43 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import React, { createContext, useState, useContext } from 'react';
+import API_URL from '../api';
 
 const CartContext = createContext();
 
-export const CartProvider = ({ children }) => {
+export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
 
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('cart');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCartItems(parsed);
-        }
-      } catch (e) {}
+  const addToCart = (product, quantity, size, color) => {
+    const existingItem = cartItems.find(
+      (item) => item.id === product.id && item.size === size && item.color === color
+    );
+    if (existingItem) {
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === product.id && item.size === size && item.color === color
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        )
+      );
+    } else {
+      setCartItems([...cartItems, { ...product, quantity, size, color }]);
     }
-  }, []);
-
-  // Save to localStorage
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  // ✅ SIMPLEST ADD TO CART — Guaranteed to work
-  const addToCart = (product, quantity = 1, size = null, color = null) => {
-    if (!product || !product.id) return;
-
-    // Create new item
-    const newItem = {
-      id: product.id,
-      name: product.name,
-      price: product.discount_price || product.price,
-      images: product.images || [],
-      quantity: quantity,
-      size: size || null,
-      color: color || null,
-      stock: product.stock || 0
-    };
-
-    // ✅ Use functional update with spread operator
-    setCartItems(prev => {
-      // Check if exists
-      const exists = prev.findIndex(
-        item => item.id === product.id && item.size === size && item.color === color
-      );
-
-      if (exists !== -1) {
-        // Update existing
-        const updated = [...prev];
-        updated[exists] = {
-          ...updated[exists],
-          quantity: updated[exists].quantity + quantity
-        };
-        toast.success(`Updated ${product.name} quantity`);
-        return updated;
-      } else {
-        // Add new
-        toast.success(`Added ${product.name} to cart`);
-        return [...prev, newItem];
-      }
-    });
   };
 
-  const removeFromCart = (id, size = null, color = null) => {
-    setCartItems(prev => {
-      const filtered = prev.filter(
-        item => !(item.id === id && item.size === size && item.color === color)
-      );
-      toast.info('Item removed');
-      return filtered;
-    });
+  const removeFromCart = (id, size, color) => {
+    setCartItems(cartItems.filter((item) => 
+      !(item.id === id && item.size === size && item.color === color)
+    ));
   };
 
-  const updateQuantity = (id, quantity, size = null, color = null) => {
-    if (quantity < 1) {
+  const updateQuantity = (id, newQuantity, size, color) => {
+    if (newQuantity <= 0) {
       removeFromCart(id, size, color);
       return;
     }
-    setCartItems(prev =>
-      prev.map(item =>
+    setCartItems(
+      cartItems.map((item) =>
         item.id === id && item.size === size && item.color === color
-          ? { ...item, quantity }
+          ? { ...item, quantity: newQuantity }
           : item
       )
     );
@@ -90,30 +45,52 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => {
     setCartItems([]);
-    toast.info('Cart cleared');
   };
 
   const getTotalItems = () => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
   const getTotalPrice = () => {
-    return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return cartItems.reduce((total, item) => {
+      const price = item.discount_price || item.price;
+      return total + price * item.quantity;
+    }, 0);
+  };
+
+  const createOrder = async (orderData) => {
+    try {
+      const res = await fetch(`${API_URL}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCartItems([]);
+        return data;
+      }
+    } catch (error) {
+      console.error('Order Error:', error);
+    }
   };
 
   return (
-    <CartContext.Provider value={{
-      cartItems,
-      addToCart,
-      removeFromCart,
+    <CartContext.Provider value={{ 
+      cartItems, 
+      addToCart, 
+      removeFromCart, 
       updateQuantity,
       clearCart,
-      getTotalItems,
-      getTotalPrice
+      getTotalItems, 
+      getTotalPrice, 
+      createOrder 
     }}>
       {children}
     </CartContext.Provider>
   );
-};
+}
 
-export const useCart = () => useContext(CartContext);
+export function useCart() {
+  return useContext(CartContext);
+}

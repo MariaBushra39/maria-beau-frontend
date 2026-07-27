@@ -1,73 +1,78 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import API_URL from '../api'; // ✅ Added
-import './Cart.css';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import API_URL from '../api';
 
-function Cart() {
-  const { cartItems, removeFromCart, getTotalItems, getTotalPrice, createOrder } = useCart();
-  const { user } = useAuth();
+const AuthContext = createContext();
 
-  const handleCheckout = async () => {
-    if (!user) {
-      alert('Please login to checkout');
-      return;
-    }
-    const orderData = {
-      userId: user.id,
-      items: cartItems.map(item => ({
-        productId: item.id,
-        quantity: item.quantity,
-        size: item.size,
-        color: item.color,
-        price: item.discount_price || item.price
-      })),
-      total: getTotalPrice()
-    };
-    const result = await createOrder(orderData);
-    if (result?.success) {
-      alert('Order placed successfully!');
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) setUser(data.user);
+        })
+        .finally(() => setLoading(false));
     } else {
-      alert('Failed to place order');
+      setLoading(false);
     }
+  }, []);
+
+  const login = async (email, password) => {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      return { success: true };
+    }
+    return { success: false, error: data.message };
   };
 
-  if (cartItems.length === 0) {
-    return (
-      <div className="cart-empty">
-        <h2>🛒 Your Cart is Empty</h2>
-        <Link to="/">Continue Shopping →</Link>
-      </div>
-    );
-  }
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
+
+  const register = async (name, email, password) => {
+    const res = await fetch(`${API_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      return { success: true };
+    }
+    return { success: false, error: data.message };
+  };
+
+  const value = { user, loading, login, logout, register };
 
   return (
-    <div className="cart-page">
-      <h2>Shopping Cart ({getTotalItems()} items)</h2>
-      <div className="cart-items">
-        {cartItems.map((item) => (
-          <div key={item.id + item.size + item.color} className="cart-item">
-            <img 
-              src={item.images?.[0] ? `${API_URL}/uploads/${item.images[0]}` : 'https://via.placeholder.com/80'} 
-              alt={item.name} 
-            />
-            <div className="cart-item-details">
-              <h4>{item.name}</h4>
-              <p>Size: {item.size} | Color: {item.color}</p>
-              <p>Qty: {item.quantity}</p>
-              <p>Price: Rs. {(item.discount_price || item.price) * item.quantity}</p>
-            </div>
-            <button onClick={() => removeFromCart(item.id, item.size, item.color)}>Remove</button>
-          </div>
-        ))}
-      </div>
-      <div className="cart-total">
-        <h3>Total: Rs. {getTotalPrice()}</h3>
-        <button className="checkout-btn" onClick={handleCheckout}>Proceed to Checkout</button>
-      </div>
-    </div>
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 
-export default Cart;
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
+
+// ✅ SIRF NAMED EXPORTS — WARNING KHATAM! (Default export hataya)
