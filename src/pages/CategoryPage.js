@@ -2,27 +2,46 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Page from './Page';
 import { FaImage } from 'react-icons/fa';
-import API_URL from '../api'; // ✅ Added
+import API_URL from '../api';
+
+// ===== SAFE IMAGE URL EXTRACTOR =====
+const getImageUrl = (images) => {
+  if (!images || !Array.isArray(images) || images.length === 0) {
+    return 'https://placehold.co/300x400?text=No+Image';
+  }
+  const img = images[0];
+  if (typeof img === 'string' && img.startsWith('http')) {
+    return img;
+  }
+  if (typeof img === 'string') {
+    return `${API_URL}/uploads/${img}`;
+  }
+  if (Array.isArray(img) && img.length > 0) {
+    const first = img[0];
+    if (typeof first === 'string' && first.startsWith('http')) {
+      return first;
+    }
+    if (typeof first === 'string') {
+      return `${API_URL}/uploads/${first}`;
+    }
+  }
+  return 'https://placehold.co/300x400?text=Image+Error';
+};
 
 function CategoryPage() {
-  // 🟢 DIRECT: useParams() se category aur subcategory lo
   const params = useParams();
   console.log('📌 Raw Params:', params);
 
-  // ✅ Agar category undefined hai toh URL se guess karo
   let { category, subcategory } = params;
   
-  // Agar category nahi mili toh URL path se nikaalo
   if (!category) {
     const path = window.location.pathname;
     const parts = path.split('/').filter(Boolean);
     if (parts.length > 0) {
-      // Pehla part category ho sakta hai (women, men, kids)
       const possibleCategory = parts[0];
       if (['women', 'men', 'kids'].includes(possibleCategory.toLowerCase())) {
         category = possibleCategory;
       }
-      // Agar doosra part hai toh woh subcategory hai
       if (parts.length > 1) {
         subcategory = parts[1];
       }
@@ -51,7 +70,7 @@ function CategoryPage() {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/api/products`); // ✅ Using API_URL
+        const res = await fetch(`${API_URL}/api/products`);
         const data = await res.json();
         
         if (data.success) {
@@ -64,10 +83,8 @@ function CategoryPage() {
           const filtered = data.data.filter(p => {
             const pCategory = (p.category || '').toLowerCase().trim();
             
-            // Pehle category match karo
             if (pCategory !== categoryLower) return false;
 
-            // Agar subcategory di hai toh match karo
             if (subcategoryLower) {
               const pSubcategory = (p.subcategory || '').toLowerCase().trim();
               return pSubcategory === subcategoryLower;
@@ -108,15 +125,14 @@ function CategoryPage() {
               style={{ cursor: 'pointer' }}
             >
               <div className="product-image-wrapper">
-                {product.images && product.images[0] && product.images[0] !== 'dummy.jpg' ? (
-                  <img 
-                    src={`${API_URL}/uploads/${product.images[0]}`} // ✅ Using API_URL
-                    alt={product.name} 
-                    className="product-img" 
-                  />
-                ) : (
-                  <div className="product-img-placeholder"><FaImage size={32} color="#ccc" /></div>
-                )}
+                <img 
+                  src={getImageUrl(product.images)}
+                  alt={product.name} 
+                  className="product-img" 
+                  onError={(e) => {
+                    e.target.src = 'https://placehold.co/300x400?text=Image+Not+Found';
+                  }}
+                />
                 {product.discount_price && (
                   <span className="sale-badge">
                     {Math.round((1 - product.discount_price / product.price) * 100)}% OFF
