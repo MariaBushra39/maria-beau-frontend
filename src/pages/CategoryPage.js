@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Page from './Page';
-import { FaImage } from 'react-icons/fa';
 import API_URL from '../api';
 
 // ===== SAFE IMAGE URL EXTRACTOR =====

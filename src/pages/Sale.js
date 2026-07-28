@@ -35,7 +35,6 @@ function Sale() {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          // Sirf woh products jin par discount hai
           const saleProducts = data.data.filter(p => p.discount_price && p.discount_price < p.price);
           setProducts(saleProducts);
         }
