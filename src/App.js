@@ -6,9 +6,8 @@ import {
   FaSearch, FaRegHeart, FaShoppingCart, FaUser, 
   FaTruck, FaLock, FaUndo, FaGem, 
   FaInstagram, FaFacebook, FaTwitter, FaPinterest,
-  FaImage, FaChevronLeft, FaChevronRight, FaTimes
+  FaChevronLeft, FaChevronRight, FaTimes
 } from 'react-icons/fa';
-
 // ===== API URL =====
 import API_URL from './api';
 
