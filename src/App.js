@@ -148,47 +148,67 @@ function AppContent() {
   const newArrivals = sortedProducts.slice(0, 4);
   const bestSellers = sortedProducts.slice(4, 8);
 
-  // ===== RENDER PRODUCT CARD (with image fallback) =====
-  const renderProduct = (product) => (
-    <div 
-      key={product.id} 
-      className="product-card"
-      onClick={() => handleProductClick(product.id)}
-    >
-      <div className="product-image-wrapper">
-        {product.images && product.images[0] && product.images[0] !== 'dummy.jpg' ? (
+  // ===== RENDER PRODUCT CARD — SAFE IMAGE HANDLING =====
+  const renderProduct = (product) => {
+    // Safe image URL extractor
+    const getImageUrl = (images) => {
+      if (!images || !Array.isArray(images) || images.length === 0) {
+        return 'https://placehold.co/300x400?text=No+Image';
+      }
+      const img = images[0];
+      if (typeof img === 'string' && img.startsWith('http')) {
+        return img;
+      }
+      if (typeof img === 'string') {
+        return `${API_URL}/uploads/${img}`;
+      }
+      if (Array.isArray(img) && img.length > 0) {
+        const first = img[0];
+        if (typeof first === 'string' && first.startsWith('http')) {
+          return first;
+        }
+        if (typeof first === 'string') {
+          return `${API_URL}/uploads/${first}`;
+        }
+      }
+      return 'https://placehold.co/300x400?text=Image+Error';
+    };
+
+    return (
+      <div 
+        key={product.id} 
+        className="product-card"
+        onClick={() => handleProductClick(product.id)}
+      >
+        <div className="product-image-wrapper">
           <img 
-            src={product.images[0].startsWith('http') 
-              ? product.images[0] 
-              : `${API_URL}/uploads/${product.images[0]}`} 
+            src={getImageUrl(product.images)}
             alt={product.name} 
             className="product-img" 
             onError={(e) => {
               e.target.src = 'https://placehold.co/300x400?text=Image+Not+Found';
             }}
           />
-        ) : (
-          <div className="product-img-placeholder"><FaImage size={32} color="#ccc" /></div>
-        )}
-        {product.discount_price && (
-          <span className="sale-badge">
-            {Math.round((1 - product.discount_price / product.price) * 100)}% OFF
-          </span>
-        )}
+          {product.discount_price && (
+            <span className="sale-badge">
+              {Math.round((1 - product.discount_price / product.price) * 100)}% OFF
+            </span>
+          )}
+        </div>
+        <h3 className="product-name">{product.name}</h3>
+        <div className="price-wrapper">
+          {product.discount_price ? (
+            <>
+              <span className="original-price">Rs. {product.price}</span>
+              <span className="discount-price">Rs. {product.discount_price}</span>
+            </>
+          ) : (
+            <span className="discount-price">Rs. {product.price}</span>
+          )}
+        </div>
       </div>
-      <h3 className="product-name">{product.name}</h3>
-      <div className="price-wrapper">
-        {product.discount_price ? (
-          <>
-            <span className="original-price">Rs. {product.price}</span>
-            <span className="discount-price">Rs. {product.discount_price}</span>
-          </>
-        ) : (
-          <span className="discount-price">Rs. {product.price}</span>
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div>
