@@ -148,7 +148,7 @@ function AppContent() {
   const newArrivals = sortedProducts.slice(0, 4);
   const bestSellers = sortedProducts.slice(4, 8);
 
-  // ===== RENDER PRODUCT CARD =====
+  // ===== RENDER PRODUCT CARD (with image fallback) =====
   const renderProduct = (product) => (
     <div 
       key={product.id} 
@@ -157,13 +157,16 @@ function AppContent() {
     >
       <div className="product-image-wrapper">
         {product.images && product.images[0] && product.images[0] !== 'dummy.jpg' ? (
-         <img 
-  src={product.images && product.images[0] && product.images[0].startsWith('http') 
-    ? product.images[0] 
-    : `${API_URL}/uploads/${product.images[0]}`} 
-  alt={product.name} 
-  className="product-img" 
-/>
+          <img 
+            src={product.images[0].startsWith('http') 
+              ? product.images[0] 
+              : `${API_URL}/uploads/${product.images[0]}`} 
+            alt={product.name} 
+            className="product-img" 
+            onError={(e) => {
+              e.target.src = 'https://placehold.co/300x400?text=Image+Not+Found';
+            }}
+          />
         ) : (
           <div className="product-img-placeholder"><FaImage size={32} color="#ccc" /></div>
         )}
