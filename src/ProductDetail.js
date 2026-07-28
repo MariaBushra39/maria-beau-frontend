@@ -3,9 +3,31 @@ import { useParams, Link } from 'react-router-dom';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import './ProductDetail.css';
 import { useCart } from './context/CartContext';
-
-// ===== API URL =====
 import API_URL from './api';
+
+// ===== SAFE IMAGE URL EXTRACTOR =====
+const getImageUrl = (images) => {
+  if (!images || !Array.isArray(images) || images.length === 0) {
+    return 'https://placehold.co/600x800?text=No+Image';
+  }
+  const img = images[0];
+  if (typeof img === 'string' && img.startsWith('http')) {
+    return img;
+  }
+  if (typeof img === 'string') {
+    return `${API_URL}/uploads/${img}`;
+  }
+  if (Array.isArray(img) && img.length > 0) {
+    const first = img[0];
+    if (typeof first === 'string' && first.startsWith('http')) {
+      return first;
+    }
+    if (typeof first === 'string') {
+      return `${API_URL}/uploads/${first}`;
+    }
+  }
+  return 'https://placehold.co/600x800?text=Image+Error';
+};
 
 function ProductDetail() {
   const { id } = useParams();
@@ -56,16 +78,15 @@ function ProductDetail() {
       <Link to="/" className="back-btn">← Back to Home</Link>
 
       <div className="product-detail-container">
-        {/* LEFT: IMAGE - Smart URL handling */}
+        {/* LEFT: IMAGE */}
         <div className="product-detail-left">
           <img 
-            src={product.images && product.images[0] && product.images[0] !== 'dummy.jpg'
-              ? (product.images[0].startsWith('http') 
-                  ? product.images[0] 
-                  : `${API_URL}/uploads/${product.images[0]}`)
-              : 'https://via.placeholder.com/600x800?text=No+Image'} 
+            src={getImageUrl(product.images)}
             alt={product.name} 
             className="main-image"
+            onError={(e) => {
+              e.target.src = 'https://placehold.co/600x800?text=Image+Not+Found';
+            }}
           />
         </div>
 

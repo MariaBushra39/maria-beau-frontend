@@ -353,7 +353,7 @@ body {
 .hero-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;      /* ✅ FIXED: from 'cotain' to 'cover' */
+  object-fit: cover;
   object-position: center;
   display: block;
   background-color: #1a1a1a;
@@ -940,16 +940,74 @@ body {
   .category-header::after { width: 30px !important; }
   .category-header .view-all { font-size: 10px !important; letter-spacing: 1px !important; }
 
-  .product-grid { 
-    grid-template-columns: repeat(2, 1fr) !important; 
-    gap: 10px !important; 
+  /* Mobile: Single Column Full Screen (Lime Light Style) */
+  .product-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
   }
-  .product-image-wrapper { height: 220px !important; }
-  .product-img-placeholder { height: 220px !important; }
-  .product-card { min-height: 300px !important; }
-  .product-name { font-size: 12px !important; margin-top: 4px !important; }
-  .discount-price { font-size: 13px !important; }
-  .original-price { font-size: 10px !important; }
+  .product-image-wrapper {
+    height: 70vh !important;
+    min-height: 400px !important;
+  }
+  .product-card {
+    min-height: auto !important;
+    margin-bottom: 10px;
+  }
+  .product-img {
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: cover !important;
+  }
+  .product-name {
+    font-size: 18px !important;
+    margin-top: 10px !important;
+    text-align: center !important;
+    min-height: auto !important;
+  }
+  .price-wrapper {
+    justify-content: center !important;
+    gap: 12px !important;
+    margin-top: 4px !important;
+  }
+  .discount-price {
+    font-size: 20px !important;
+  }
+  .original-price {
+    font-size: 16px !important;
+  }
+
+  /* Product Detail Page - Mobile */
+  .product-detail-container {
+    flex-direction: column !important;
+    padding: 12px !important;
+  }
+  .product-detail-left {
+    width: 100% !important;
+  }
+  .main-image {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 70vh !important;
+    object-fit: contain !important;
+  }
+  .product-detail-right {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+  .product-detail-right h1 {
+    font-size: 24px !important;
+  }
+  .detail-price-section {
+    font-size: 20px !important;
+  }
+  .detail-cart-btn {
+    width: 100% !important;
+    padding: 16px !important;
+    font-size: 16px !important;
+  }
+  .size-options, .color-options {
+    flex-wrap: wrap !important;
+  }
 
   .section-title { font-size: 24px !important; margin: 20px 0 12px !important; }
   .section-subtitle { font-size: 13px !important; margin-bottom: 16px !important; }
@@ -987,7 +1045,7 @@ body {
   .empty-msg { font-size: 13px !important; padding: 12px 0 !important; }
 }
 
-/* ===== EXTRA SMALL PHONES (below 480px) — FIXED 2 COLUMNS ===== */
+/* ===== EXTRA SMALL PHONES (below 480px) — Single Column Full Screen ===== */
 @media (max-width: 480px) {
   .navbar-top { padding: 6px 3% !important; min-height: 36px !important; }
   .logo { font-size: 16px !important; }
@@ -1002,19 +1060,37 @@ body {
   .hero-content p { font-size: 10px !important; letter-spacing: 2px !important; }
   .hero-btn { padding: 6px 16px !important; font-size: 10px !important; margin-top: 10px !important; }
 
-  /* ✅ FIXED: 2 columns on very small phones */
   .product-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
-  .product-image-wrapper { height: 180px !important; }
-  .product-card { min-height: 250px !important; }
-
-  /* ✅ IMAGES FULL VISIBLE (not cut) */
+  .product-image-wrapper {
+    height: 60vh !important;
+    min-height: 300px !important;
+  }
+  .product-card {
+    min-height: auto !important;
+  }
   .product-img {
     height: 100% !important;
     width: 100% !important;
     object-fit: cover !important;
+  }
+  .product-name {
+    font-size: 16px !important;
+  }
+  .discount-price {
+    font-size: 18px !important;
+  }
+  .original-price {
+    font-size: 14px !important;
+  }
+
+  .main-image {
+    max-height: 60vh !important;
+  }
+  .product-detail-right h1 {
+    font-size: 20px !important;
   }
 
   .features-grid { grid-template-columns: 1fr !important; }
