@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FaMinus, FaPlus } from 'react-icons/fa';   // ✅ FaImage hata diya
+import { FaMinus, FaPlus } from 'react-icons/fa';
 import './ProductDetail.css';
 import { useCart } from './context/CartContext';
 
@@ -16,7 +16,6 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
 
-  // ✅ Using API_URL
   useEffect(() => {
     fetch(`${API_URL}/api/products/${id}`)
       .then(res => res.json())
@@ -57,11 +56,13 @@ function ProductDetail() {
       <Link to="/" className="back-btn">← Back to Home</Link>
 
       <div className="product-detail-container">
-        {/* LEFT: IMAGE - Using API_URL */}
+        {/* LEFT: IMAGE - Smart URL handling */}
         <div className="product-detail-left">
           <img 
-            src={product.images && product.images[0] && product.images[0] !== 'dummy.jpg' 
-              ? `${API_URL}/uploads/${product.images[0]}` 
+            src={product.images && product.images[0] && product.images[0] !== 'dummy.jpg'
+              ? (product.images[0].startsWith('http') 
+                  ? product.images[0] 
+                  : `${API_URL}/uploads/${product.images[0]}`)
               : 'https://via.placeholder.com/600x800?text=No+Image'} 
             alt={product.name} 
             className="main-image"

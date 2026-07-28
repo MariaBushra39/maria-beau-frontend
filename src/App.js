@@ -157,11 +157,13 @@ function AppContent() {
     >
       <div className="product-image-wrapper">
         {product.images && product.images[0] && product.images[0] !== 'dummy.jpg' ? (
-          <img 
-            src={`${API_URL}/uploads/${product.images[0]}`} 
-            alt={product.name} 
-            className="product-img" 
-          />
+         <img 
+  src={product.images && product.images[0] && product.images[0].startsWith('http') 
+    ? product.images[0] 
+    : `${API_URL}/uploads/${product.images[0]}`} 
+  alt={product.name} 
+  className="product-img" 
+/>
         ) : (
           <div className="product-img-placeholder"><FaImage size={32} color="#ccc" /></div>
         )}
