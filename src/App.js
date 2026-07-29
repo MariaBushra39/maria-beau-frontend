@@ -38,6 +38,8 @@ import Sale from './pages/Sale';
 import CategoryPage from './pages/CategoryPage';
 import Profile from './pages/Profile';
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';          // ✅ ADDED
+import OrderSuccess from './pages/OrderSuccess';  // ✅ ADDED
 
 // ===== MAIN APP CONTENT =====
 function AppContent() {
@@ -489,6 +491,8 @@ function AppContent() {
         {/* ===== USER PAGES ===== */}
         <Route path="/profile" element={<Profile />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />                {/* ✅ ADDED */}
+        <Route path="/order-success/:orderId" element={<OrderSuccess />} /> {/* ✅ ADDED */}
 
         {/* ===== OTHER PAGES ===== */}
         <Route path="/product/:id" element={<ProductDetail />} />

@@ -3,7 +3,32 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import API_URL from '../api'; // ✅ Added
 import './Checkout.css';
+
+// ===== SAFE IMAGE URL EXTRACTOR =====
+const getImageUrl = (images) => {
+  if (!images || !Array.isArray(images) || images.length === 0) {
+    return 'https://placehold.co/60x60?text=No+Image';
+  }
+  const img = images[0];
+  if (typeof img === 'string' && img.startsWith('http')) {
+    return img;
+  }
+  if (typeof img === 'string') {
+    return `${API_URL}/uploads/${img}`;
+  }
+  if (Array.isArray(img) && img.length > 0) {
+    const first = img[0];
+    if (typeof first === 'string' && first.startsWith('http')) {
+      return first;
+    }
+    if (typeof first === 'string') {
+      return `${API_URL}/uploads/${first}`;
+    }
+  }
+  return 'https://placehold.co/60x60?text=Image+Error';
+};
 
 function Checkout() {
   const { cartItems, getTotalPrice, clearCart } = useCart();
@@ -19,7 +44,7 @@ function Checkout() {
     city: '',
     phone: '',
     shippingMethod: 'home_delivery',
-    paymentMethod: 'cash_on_delivery', // ✅ FIXED: Default value matches ENUM
+    paymentMethod: 'cash_on_delivery',
     billingSame: true,
     discount: ''
   });
@@ -50,7 +75,7 @@ function Checkout() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/orders', {
+      const res = await fetch(`${API_URL}/api/orders`, { // ✅ Using API_URL
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +93,7 @@ function Checkout() {
             country: formData.country,
             shippingMethod: formData.shippingMethod
           },
-          paymentMethod: formData.paymentMethod, // ✅ Sends correct ENUM value
+          paymentMethod: formData.paymentMethod,
           items: cartItems.map(item => ({
             product_id: item.id,
             quantity: item.quantity,
@@ -96,7 +121,6 @@ function Checkout() {
   const shipping = subtotal >= 3000 ? 0 : 200;
   const total = subtotal + shipping;
 
-  // ✅ DYNAMIC BUTTON TEXT (Matching ENUM values)
   const getButtonText = () => {
     if (loading) return 'Processing...';
     switch(formData.paymentMethod) {
@@ -124,9 +148,7 @@ function Checkout() {
   return (
     <div className="checkout-page">
       <div className="checkout-container">
-        {/* ================================================================ */}
         {/* LEFT: FORM */}
-        {/* ================================================================ */}
         <div className="checkout-form">
           <form onSubmit={handleSubmit}>
             {/* ===== SHIPPING INFORMATION ===== */}
@@ -232,13 +254,12 @@ function Checkout() {
               </div>
             </div>
 
-            {/* ===== PAYMENT (UPDATED WITH CORRECT ENUM VALUES) ===== */}
+            {/* ===== PAYMENT ===== */}
             <div className="form-section">
               <h3>Payment</h3>
               <p className="section-note">All transactions are secure and encrypted.</p>
 
               <div className="payment-gateways">
-                {/* ✅ Cash on Delivery */}
                 <label className={`payment-gateway ${formData.paymentMethod === 'cash_on_delivery' ? 'active' : ''}`}>
                   <input
                     type="radio"
@@ -253,7 +274,6 @@ function Checkout() {
                   </div>
                 </label>
 
-                {/* ✅ Bank Transfer (JazzCash/EasyPaisa) */}
                 <label className={`payment-gateway ${formData.paymentMethod === 'bank_transfer' ? 'active' : ''}`}>
                   <input
                     type="radio"
@@ -268,7 +288,6 @@ function Checkout() {
                   </div>
                 </label>
 
-                {/* ✅ Card */}
                 <label className={`payment-gateway ${formData.paymentMethod === 'card' ? 'active' : ''}`}>
                   <input
                     type="radio"
@@ -327,9 +346,7 @@ function Checkout() {
           </form>
         </div>
 
-        {/* ================================================================ */}
-        {/* RIGHT: ORDER SUMMARY (WITH IMAGES) */}
-        {/* ================================================================ */}
+        {/* RIGHT: ORDER SUMMARY */}
         <div className="checkout-summary">
           <div className="summary-header">
             <h3>Seller Summary</h3>
@@ -340,14 +357,13 @@ function Checkout() {
             {cartItems.map((item, idx) => (
               <div key={`${item.id}-${idx}`} className="summary-item">
                 <div className="summary-item-image">
-                  {item.images && item.images[0] && item.images[0] !== 'dummy.jpg' ? (
-                    <img 
-                      src={`http://127.0.0.1:5000/uploads/${item.images[0]}`} 
-                      alt={item.name} 
-                    />
-                  ) : (
-                    <span>👗</span>
-                  )}
+                  <img 
+                    src={getImageUrl(item.images)} 
+                    alt={item.name} 
+                    onError={(e) => {
+                      e.target.src = 'https://placehold.co/60x60?text=Image+Error';
+                    }}
+                  />
                 </div>
                 <div className="summary-item-info">
                   <p className="summary-item-name">{item.name}</p>
