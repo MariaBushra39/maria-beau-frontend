@@ -1,10 +1,28 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import API_URL from '../api';
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  // 🔥 Load cart from localStorage on initial render
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.error('Failed to load cart from localStorage:', error);
+      return [];
+    }
+  });
+
+  // 🔥 Save cart to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('cart', JSON.stringify(cartItems));
+    } catch (error) {
+      console.error('Failed to save cart to localStorage:', error);
+    }
+  }, [cartItems]);
 
   const addToCart = (product, quantity, size, color) => {
     const existingItem = cartItems.find(
@@ -92,5 +110,9 @@ export function CartProvider({ children }) {
 }
 
 export function useCart() {
-  return useContext(CartContext);
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
 }
