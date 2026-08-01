@@ -144,4 +144,4 @@ function Register() {
   );
 }
 
-export default Register;s
+export default Register;

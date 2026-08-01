@@ -10,31 +10,21 @@ function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();  // ✅ Context se login function lo
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  console.log('✅ Login component rendered successfully!');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('🟢 Submit button CLICKED! Form submitted.');
     setLoading(true);
-
     try {
-      console.log('📡 Calling login function from AuthContext...');
-      const result = await login(email, password);  // ✅ Bas email aur password do
-      console.log('📥 Login result:', result);
-
+      const result = await login(email, password);
       if (result.success) {
-        console.log('✅ Login successful! Redirecting...');
         toast.success('Welcome back!');
         navigate('/');
       } else {
-        console.log('❌ Login failed:', result.error);
         toast.error(result.error || 'Login failed');
       }
     } catch (error) {
-      console.log('🔥 Unexpected error:', error);
       toast.error('Server error. Please try again.');
     } finally {
       setLoading(false);
