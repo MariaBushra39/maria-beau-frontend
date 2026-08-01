@@ -41,6 +41,11 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';          // ✅ ADDED
 import OrderSuccess from './pages/OrderSuccess';  // ✅ ADDED
 
+// ===== ADMIN PAGES =====
+import Admin from './pages/Admin';
+import AddProduct from './pages/AddProduct';
+import EditProduct from './pages/EditProduct';
+
 // ===== MAIN APP CONTENT =====
 function AppContent() {
   const [products, setProducts] = useState([]);
@@ -493,6 +498,11 @@ function AppContent() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />                {/* ✅ ADDED */}
         <Route path="/order-success/:orderId" element={<OrderSuccess />} /> {/* ✅ ADDED */}
+
+        {/* ===== ADMIN PAGES ===== */}
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/add-product" element={<AddProduct />} />
+        <Route path="/admin/edit-product/:id" element={<EditProduct />} />
 
         {/* ===== OTHER PAGES ===== */}
         <Route path="/product/:id" element={<ProductDetail />} />
