@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaArrowLeft, FaSave, FaUpload, FaTimes, FaImage } from 'react-icons/fa';
+import API_URL from '../api';
 import './Admin.css';
 
 function AddProduct() {
@@ -49,7 +50,7 @@ function AddProduct() {
     setUploadingImage(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/products/upload-image', {
+      const res = await fetch(`${API_URL}/api/products/upload-image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -109,7 +110,7 @@ function AddProduct() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/products', {
+      const res = await fetch(`${API_URL}/api/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -248,7 +249,7 @@ function AddProduct() {
               {imageList.map((filename, idx) => (
                 <div className="image-preview-item" key={`${filename}-${idx}`}>
                   {filename !== 'dummy.jpg' ? (
-                    <img src={`http://127.0.0.1:5000/uploads/${filename}`} alt={`upload-${idx}`} />
+                    <img src={`${API_URL}/uploads/${filename}`} alt={`upload-${idx}`} />
                   ) : (
                     <div className="image-preview-placeholder"><FaImage /></div>
                   )}

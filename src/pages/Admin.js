@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import API_URL from '../api';
 import {
   FaBoxOpen, FaClipboardList, FaPlus, FaSearch,
   FaEdit, FaTrash, FaImage
@@ -19,7 +20,7 @@ function Admin() {
   // ===== FETCH PRODUCTS =====
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/products');
+      const res = await fetch(`${API_URL}/api/products`);
       const data = await res.json();
       if (data.success) setProducts(data.data);
     } catch (error) {
@@ -31,7 +32,7 @@ function Admin() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/orders/admin/all', {
+      const res = await fetch(`${API_URL}/api/orders/admin/all`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -56,7 +57,7 @@ function Admin() {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://127.0.0.1:5000/api/products/${id}`, {
+      const res = await fetch(`${API_URL}/api/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -76,7 +77,7 @@ function Admin() {
   const updateOrderStatus = async (orderId, status) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://127.0.0.1:5000/api/orders/${orderId}/status`, {
+      const res = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -192,7 +193,7 @@ function Admin() {
                     <tr key={product.id}>
                       <td>
                         {product.images && product.images[0] && product.images[0] !== 'dummy.jpg' ? (
-                          <img src={`http://127.0.0.1:5000/uploads/${product.images[0]}`} alt={product.name} className="admin-thumb" />
+                          <img src={`${API_URL}/uploads/${product.images[0]}`} alt={product.name} className="admin-thumb" />
                         ) : (
                           <div className="admin-thumb-placeholder"><FaImage /></div>
                         )}

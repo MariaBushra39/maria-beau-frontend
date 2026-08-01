@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaArrowLeft, FaSave, FaUpload, FaTimes, FaImage } from 'react-icons/fa';
+import API_URL from '../api';
 import './Admin.css';
 
 function EditProduct() {
@@ -26,7 +27,7 @@ function EditProduct() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:5000/api/products/${id}`);
+        const res = await fetch(`${API_URL}/api/products/${id}`);
         const data = await res.json();
         if (data.success) {
           const p = data.data;
@@ -82,7 +83,7 @@ function EditProduct() {
     setUploadingImage(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/products/upload-image', {
+      const res = await fetch(`${API_URL}/api/products/upload-image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -141,7 +142,7 @@ function EditProduct() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://127.0.0.1:5000/api/products/${id}`, {
+      const res = await fetch(`${API_URL}/api/products/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -276,7 +277,7 @@ function EditProduct() {
               {imageList.map((filename, idx) => (
                 <div className="image-preview-item" key={`${filename}-${idx}`}>
                   {filename !== 'dummy.jpg' ? (
-                    <img src={`http://127.0.0.1:5000/uploads/${filename}`} alt={`upload-${idx}`} />
+                    <img src={`${API_URL}/uploads/${filename}`} alt={`upload-${idx}`} />
                   ) : (
                     <div className="image-preview-placeholder"><FaImage /></div>
                   )}
