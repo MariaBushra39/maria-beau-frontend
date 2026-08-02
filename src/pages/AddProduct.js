@@ -5,6 +5,14 @@ import { FaArrowLeft, FaSave, FaUpload, FaTimes, FaImage } from 'react-icons/fa'
 import API_URL from '../api';
 import './Admin.css';
 
+// If the image is already a full URL (e.g. Cloudinary), use it as-is.
+// Otherwise, treat it as a filename served from our own backend.
+const getImageSrc = (filename) => {
+  if (!filename) return null;
+  if (filename.startsWith('http')) return filename;
+  return `${API_URL}/uploads/${filename}`;
+};
+
 function AddProduct() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -31,7 +39,7 @@ function AddProduct() {
   };
 
   // ============================================================
-  // 🖼️ IMAGE UPLOAD FUNCTION (Postman Ki Zaroorat Khatam!)
+  // 🖼️ IMAGE UPLOAD FUNCTION (uploads to Cloudinary via backend)
   // ============================================================
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -61,7 +69,7 @@ function AddProduct() {
       const data = await res.json();
       if (data.success) {
         const filename = data.data.filename;
-        // Append filename to existing images list
+        // Append filename (Cloudinary URL) to existing images list
         setFormData(prev => ({
           ...prev,
           images: prev.images ? `${prev.images}, ${filename}` : filename
@@ -246,18 +254,21 @@ function AddProduct() {
 
           {imageList.length > 0 && (
             <div className="image-preview-row">
-              {imageList.map((filename, idx) => (
-                <div className="image-preview-item" key={`${filename}-${idx}`}>
-                  {filename !== 'dummy.jpg' ? (
-                    <img src={`${API_URL}/uploads/${filename}`} alt={`upload-${idx}`} />
-                  ) : (
-                    <div className="image-preview-placeholder"><FaImage /></div>
-                  )}
-                  <button type="button" className="remove-image-btn" onClick={() => removeImage(idx)}>
-                    <FaTimes />
-                  </button>
-                </div>
-              ))}
+              {imageList.map((filename, idx) => {
+                const previewSrc = filename !== 'dummy.jpg' ? getImageSrc(filename) : null;
+                return (
+                  <div className="image-preview-item" key={`${filename}-${idx}`}>
+                    {previewSrc ? (
+                      <img src={previewSrc} alt={`upload-${idx}`} />
+                    ) : (
+                      <div className="image-preview-placeholder"><FaImage /></div>
+                    )}
+                    <button type="button" className="remove-image-btn" onClick={() => removeImage(idx)}>
+                      <FaTimes />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
 

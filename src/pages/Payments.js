@@ -5,7 +5,7 @@ function Payments() {
   return (
     <Page title="Payment Methods">
       <p>
-        At <strong>Maria B. Collection</strong>, we provide secure and
+        At <strong>MARIABEAU</strong>, we provide secure and
         convenient payment options to ensure a safe and hassle-free shopping
         experience.
       </p>
@@ -37,7 +37,7 @@ function Payments() {
       </p>
 
       <p>
-        <strong>Maria B. Collection – Shop with Confidence.</strong>
+        <strong>MariaBeau – Shop with Confidence.</strong>
       </p>
     </Page>
   );

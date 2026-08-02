@@ -5,7 +5,7 @@ function Blogs() {
   return (
     <Page title="Our Blog">
       <p>
-        Welcome to the <strong>Maria B. Collection Blog</strong>, your source
+        Welcome to the <strong>MARIABEAU Blog</strong>, your source
         for the latest fashion trends, styling tips, seasonal collections, and
         fashion inspiration.
       </p>
@@ -28,7 +28,7 @@ function Blogs() {
       </p>
 
       <p>
-        <strong>Maria B. Collection – Inspiring Your Style Every Day.</strong>
+        <strong>MariaBeau – Inspiring Your Style Every Day.</strong>
       </p>
     </Page>
   );

@@ -27,7 +27,7 @@ function TrackOrder() {
       </p>
 
       <p>
-        <strong>Maria B. Collection – Track Your Order with Ease.</strong>
+        <strong>MariaBeau – Track Your Order with Ease.</strong>
       </p>
     </Page>
   );

@@ -5,7 +5,7 @@ function Privacy() {
   return (
     <Page title="Privacy Policy">
       <p>
-        At <strong>Maria B. Collection</strong>, we value your privacy and are
+        At <strong>MARIABEAU</strong>, we value your privacy and are
         committed to protecting your personal information. This Privacy Policy
         explains how we collect, use, and safeguard your data when you visit
         our website or place an order.
@@ -40,7 +40,7 @@ function Privacy() {
       </p>
 
       <p>
-        <strong>Maria B. Collection – Your Privacy, Our Responsibility.</strong>
+        <strong>MariaBeau – Your Privacy, Our Responsibility.</strong>
       </p>
     </Page>
   );

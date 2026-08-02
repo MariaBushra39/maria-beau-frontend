@@ -5,7 +5,7 @@ function Returns() {
   return (
     <Page title="Exchange & Return Policy">
       <p>
-        At <strong>Maria B. Collection</strong>, customer satisfaction is our
+        At <strong>MARIABEAU</strong>, customer satisfaction is our
         priority. If you're not completely satisfied with your purchase, we're
         here to help.
       </p>
@@ -44,7 +44,7 @@ function Returns() {
       </p>
 
       <p>
-        <strong>Maria B. Collection – Your Satisfaction Is Our Priority.</strong>
+        <strong>MariaBeau – Your Satisfaction Is Our Priority.</strong>
       </p>
     </Page>
   );

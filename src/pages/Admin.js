@@ -9,6 +9,14 @@ import {
 } from 'react-icons/fa';
 import './Admin.css';
 
+// If the image is already a full URL (e.g. Cloudinary), use it as-is.
+// Otherwise, treat it as a filename served from our own backend.
+const getImageSrc = (filename) => {
+  if (!filename) return null;
+  if (filename.startsWith('http')) return filename;
+  return `${API_URL}/uploads/${filename}`;
+};
+
 function Admin() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
@@ -189,29 +197,34 @@ function Admin() {
                     </td>
                   </tr>
                 ) : (
-                  filteredProducts.map(product => (
-                    <tr key={product.id}>
-                      <td>
-                        {product.images && product.images[0] && product.images[0] !== 'dummy.jpg' ? (
-                          <img src={`${API_URL}/uploads/${product.images[0]}`} alt={product.name} className="admin-thumb" />
-                        ) : (
-                          <div className="admin-thumb-placeholder"><FaImage /></div>
-                        )}
-                      </td>
-                      <td className="product-name-cell">{product.name}</td>
-                      <td className="price-cell">Rs. {product.price}</td>
-                      <td><span className="category-pill">{product.category}</span></td>
-                      <td>
-                        <span className={`stock-badge ${product.stock <= 5 ? 'low' : ''}`}>
-                          {product.stock}
-                        </span>
-                      </td>
-                      <td className="actions-cell">
-                        <Link to={`/admin/edit-product/${product.id}`} className="edit-btn"><FaEdit /> Edit</Link>
-                        <button className="delete-btn" onClick={() => deleteProduct(product.id)}><FaTrash /> Delete</button>
-                      </td>
-                    </tr>
-                  ))
+                  filteredProducts.map(product => {
+                    const thumbSrc = product.images && product.images[0] && product.images[0] !== 'dummy.jpg'
+                      ? getImageSrc(product.images[0])
+                      : null;
+                    return (
+                      <tr key={product.id}>
+                        <td>
+                          {thumbSrc ? (
+                            <img src={thumbSrc} alt={product.name} className="admin-thumb" />
+                          ) : (
+                            <div className="admin-thumb-placeholder"><FaImage /></div>
+                          )}
+                        </td>
+                        <td className="product-name-cell">{product.name}</td>
+                        <td className="price-cell">Rs. {product.price}</td>
+                        <td><span className="category-pill">{product.category}</span></td>
+                        <td>
+                          <span className={`stock-badge ${product.stock <= 5 ? 'low' : ''}`}>
+                            {product.stock}
+                          </span>
+                        </td>
+                        <td className="actions-cell">
+                          <Link to={`/admin/edit-product/${product.id}`} className="edit-btn"><FaEdit /> Edit</Link>
+                          <button className="delete-btn" onClick={() => deleteProduct(product.id)}><FaTrash /> Delete</button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

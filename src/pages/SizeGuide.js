@@ -31,7 +31,7 @@ function SizeGuide() {
       </p>
 
       <p>
-        <strong>Maria B. Collection – Perfect Fit, Perfect Style.</strong>
+        <strong>MariaBeau – Perfect Fit, Perfect Style.</strong>
       </p>
     </Page>
   );

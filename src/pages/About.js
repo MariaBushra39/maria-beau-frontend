@@ -23,13 +23,13 @@ function About() {
       </p>
 
       <p>
-        At <strong>Maria B. Collection</strong>, we believe that fashion is more
+        At <strong>MARIABEAU</strong>, we believe that fashion is more
         than clothing—it's a way to express your personality, confidence, and
         individuality.
       </p>
 
       <p>
-        <strong>Maria B. Collection — Style That Defines You.</strong>
+        <strong>MariaBeau — Style That Defines You.</strong>
       </p>
     </Page>
   );
