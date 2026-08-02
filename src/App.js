@@ -13,6 +13,7 @@ import API_URL from './api';
 
 // ===== AUTH CONTEXT =====
 import { AuthProvider, useAuth } from './context/AuthContext';
+import AdminRoute from './context/AdminRoute';
 
 // ===== CART CONTEXT =====
 import { CartProvider, useCart } from './context/CartContext';
@@ -418,7 +419,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">New Arrivals</h2>
+              <h2 className="section-title">✨ New Arrivals</h2>
               <div className="product-grid">
                 {newArrivals.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
@@ -429,7 +430,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">Best Sellers</h2>
+              <h2 className="section-title">🔥 Best Sellers</h2>
               <div className="product-grid">
                 {bestSellers.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
@@ -499,10 +500,10 @@ function AppContent() {
         <Route path="/checkout" element={<Checkout />} />                {/* ✅ ADDED */}
         <Route path="/order-success/:orderId" element={<OrderSuccess />} /> {/* ✅ ADDED */}
 
-        {/* ===== ADMIN PAGES ===== */}
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/admin/add-product" element={<AddProduct />} />
-        <Route path="/admin/edit-product/:id" element={<EditProduct />} />
+        {/* ===== ADMIN PAGES (Protected — admin role only) ===== */}
+        <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+        <Route path="/admin/add-product" element={<AdminRoute><AddProduct /></AdminRoute>} />
+        <Route path="/admin/edit-product/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />
 
         {/* ===== OTHER PAGES ===== */}
         <Route path="/product/:id" element={<ProductDetail />} />

@@ -8,7 +8,7 @@ import './Admin.css';
 // If the image is already a full URL (e.g. Cloudinary), use it as-is.
 // Otherwise, treat it as a filename served from our own backend.
 const getImageSrc = (filename) => {
-  if (!filename) return null;
+  if (!filename || typeof filename !== 'string') return null;
   if (filename.startsWith('http')) return filename;
   return `${API_URL}/uploads/${filename}`;
 };
