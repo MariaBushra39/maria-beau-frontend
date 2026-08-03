@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProductDetail from './ProductDetail';
 import './App.css';
 import { 
-  FaSearch, FaRegHeart, FaShoppingCart, FaUser, 
+  FaSearch, FaRegHeart, FaHeart, FaShoppingCart, FaUser, 
   FaTruck, FaLock, FaUndo, FaGem, 
   FaInstagram, FaFacebook, FaTwitter, FaPinterest,
-  FaChevronLeft, FaChevronRight, FaTimes
+  FaChevronLeft, FaChevronRight, FaTimes, FaSignOutAlt
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 // ===== API URL =====
@@ -18,6 +18,7 @@ import AdminRoute from './context/AdminRoute';
 
 // ===== CART CONTEXT =====
 import { CartProvider, useCart } from './context/CartContext';
+import { WishlistProvider, useWishlist } from './context/WishlistContext';
 
 // ===== AUTH PAGES =====
 import Login from './pages/Login';
@@ -42,6 +43,7 @@ import Profile from './pages/Profile';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';          // ✅ ADDED
 import OrderSuccess from './pages/OrderSuccess';  // ✅ ADDED
+import Wishlist from './pages/Wishlist';
 
 // ===== ADMIN PAGES =====
 import Admin from './pages/Admin';
@@ -55,8 +57,11 @@ function AppContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [offerIndex, setOfferIndex] = useState(0);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user, logout } = useAuth();
   const { getTotalItems, addToCart } = useCart();
+  const { isInWishlist, toggleWishlist, getTotalWishlistItems } = useWishlist();
 
   // ===== OFFER BAR MESSAGES =====
   const offers = useMemo(() => [
@@ -143,6 +148,38 @@ function AppContent() {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+  // ===== LIVE SEARCH (filters already-loaded products by name/category) =====
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return products
+      .filter(p =>
+        p.name?.toLowerCase().includes(q) ||
+        p.category?.toLowerCase().includes(q) ||
+        p.subcategory?.toLowerCase().includes(q)
+      )
+      .slice(0, 8);
+  }, [searchQuery, products]);
+
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+    setSearchQuery('');
+  };
+
+  const handleSearchResultClick = (productId) => {
+    setIsSearchOpen(false);
+    setSearchQuery('');
+    window.location.href = `/product/${productId}`;
+  };
+
+  // Wishlist heart toggle on a product card (doesn't navigate to product page)
+  const handleWishlistToggle = (e, product) => {
+    e.stopPropagation();
+    const wasInWishlist = isInWishlist(product.id);
+    toggleWishlist(product);
+    toast.success(wasInWishlist ? `${product.name} removed from wishlist` : `${product.name} added to wishlist!`);
+  };
+
   const handleProductClick = (productId) => {
     window.location.href = `/product/${productId}`;
   };
@@ -179,6 +216,14 @@ function AppContent() {
   const sortedProducts = [...products].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const newArrivals = sortedProducts.slice(0, 4);
   const bestSellers = sortedProducts.slice(4, 8);
+
+  // A product counts as "NEW" if it was added within the last 14 days.
+  // Only shown when the product has no discount (discount badge takes priority).
+  const isNewProduct = (createdAt) => {
+    if (!createdAt) return false;
+    const daysSince = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24);
+    return daysSince <= 14;
+  };
 
   // ===== RENDER PRODUCT CARD — SAFE IMAGE HANDLING =====
   const renderProduct = (product) => {
@@ -226,17 +271,26 @@ function AppContent() {
               e.target.style.opacity = 1;
             }}
           />
-          {product.discount_price && (
+          {product.discount_price ? (
             <span className="sale-badge">
               {Math.round((1 - product.discount_price / product.price) * 100)}% OFF
             </span>
-          )}
+          ) : isNewProduct(product.created_at) ? (
+            <span className="sale-badge new-badge">NEW</span>
+          ) : null}
           <button
             className="quick-add-btn"
             onClick={(e) => handleQuickAdd(e, product)}
             aria-label={`Add ${product.name} to cart`}
           >
             <FaShoppingCart />
+          </button>
+          <button
+            className={`wishlist-toggle-btn ${isInWishlist(product.id) ? 'active' : ''}`}
+            onClick={(e) => handleWishlistToggle(e, product)}
+            aria-label={`Toggle ${product.name} in wishlist`}
+          >
+            {isInWishlist(product.id) ? <FaHeart /> : <FaRegHeart />}
           </button>
         </div>
         <h3 className="product-name">{product.name}</h3>
@@ -273,8 +327,13 @@ function AppContent() {
             <span className="logo-part1">Maria</span><span className="logo-part2">Beau</span>
           </div>
           <div className="nav-icons">
-            <span className="icon"><FaSearch /></span>
-            <span className="icon"><FaRegHeart /></span>
+            <span className="icon" onClick={toggleSearch} style={{ cursor: 'pointer' }}><FaSearch /></span>
+            <Link to="/wishlist" className="icon cart-icon" style={{ position: 'relative', color: '#fff' }}>
+              <FaRegHeart />
+              {getTotalWishlistItems() > 0 && (
+                <span className="cart-badge">{getTotalWishlistItems()}</span>
+              )}
+            </Link>
             <Link to="/cart" className="icon cart-icon" style={{ position: 'relative', color: '#fff' }}>
               <FaShoppingCart />
               {getTotalItems() > 0 && (
@@ -284,15 +343,15 @@ function AppContent() {
             {user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Link to="/profile" className="icon login-btn" style={{ color: '#fff', textDecoration: 'none' }}>
-                  <FaUser /> Profile
+                  <FaUser /> <span className="btn-label">Profile</span>
                 </Link>
                 <span className="icon login-btn" onClick={logout} style={{ cursor: 'pointer' }}>
-                  Logout
+                  <FaSignOutAlt /> <span className="btn-label">Logout</span>
                 </span>
               </div>
             ) : (
               <Link to="/login" className="icon login-btn">
-                <FaUser /> Login
+                <FaUser /> <span className="btn-label">Login</span>
               </Link>
             )}
           </div>
@@ -331,6 +390,44 @@ function AppContent() {
         </div>
       </nav>
 
+      {/* ===== SEARCH DROPDOWN ===== */}
+      {isSearchOpen && (
+        <div className="search-overlay" onClick={() => setIsSearchOpen(false)}>
+          <div className="search-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="search-input-row">
+              <FaSearch className="search-input-icon" />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Search for products, categories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <span className="search-close-btn" onClick={() => setIsSearchOpen(false)}><FaTimes /></span>
+            </div>
+            {searchQuery.trim() && (
+              <div className="search-results">
+                {searchResults.length === 0 ? (
+                  <p className="search-no-results">No products found for "{searchQuery}"</p>
+                ) : (
+                  searchResults.map((product) => (
+                    <div
+                      key={product.id}
+                      className="search-result-item"
+                      onClick={() => handleSearchResultClick(product.id)}
+                    >
+                      <span className="search-result-name">{product.name}</span>
+                      <span className="search-result-category">{product.category}</span>
+                      <span className="search-result-price">Rs. {product.discount_price || product.price}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ===== SIDEBAR MENU ===== */}
       <div className={`sidebar-overlay ${isMenuOpen ? 'active' : ''}`} onClick={toggleMenu}></div>
       <div className={`sidebar-menu ${isMenuOpen ? 'open' : ''}`}>
@@ -367,6 +464,7 @@ function AppContent() {
           </li>
           <li><Link to="/new-arrivals" onClick={toggleMenu}>New Arrivals</Link></li>
           <li><Link to="/sale" onClick={toggleMenu} className="sale-link">Sale</Link></li>
+          <li><Link to="/wishlist" onClick={toggleMenu}>Wishlist</Link></li>
           <li><Link to="/contact" onClick={toggleMenu}>Contact</Link></li>
           {user ? (
             <>
@@ -534,6 +632,7 @@ function AppContent() {
         {/* ===== USER PAGES ===== */}
         <Route path="/profile" element={<Profile />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/checkout" element={<Checkout />} />                {/* ✅ ADDED */}
         <Route path="/order-success/:orderId" element={<OrderSuccess />} /> {/* ✅ ADDED */}
 
@@ -610,11 +709,13 @@ function AppContent() {
 function App() {
   return (
     <CartProvider>
-      <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AuthProvider>
+      <WishlistProvider>
+        <AuthProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AuthProvider>
+      </WishlistProvider>
     </CartProvider>
   );
 }

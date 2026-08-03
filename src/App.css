@@ -609,6 +609,15 @@ body {
   letter-spacing: 1px;
   z-index: 2;
   border-radius: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  animation: badgeFadeIn 0.4s ease;
+}
+.sale-badge.new-badge {
+  background: #1a1a1a;
+}
+@keyframes badgeFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .product-name {
   font-size: 13px;
@@ -1001,16 +1010,23 @@ body {
   .nav-icons {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     font-size: 16px;
   }
   .nav-icons .icon {
     font-size: 16px;
   }
+  .btn-label {
+    display: none;
+  }
   .login-btn {
     font-size: 10px !important;
-    padding: 4px 10px !important;
+    padding: 6px !important;
     border-width: 1px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 30px;
   }
   .hamburger {
     display: flex !important;
@@ -1151,9 +1167,9 @@ body {
   .navbar-top { padding: 6px 3% !important; min-height: 36px !important; }
   .logo { font-size: 16px !important; }
   .logo-part1, .logo-part2 { font-size: 16px !important; }
-  .nav-icons { gap: 8px !important; font-size: 14px !important; }
+  .nav-icons { gap: 6px !important; font-size: 14px !important; }
   .nav-icons .icon { font-size: 14px !important; }
-  .login-btn { font-size: 9px !important; padding: 3px 8px !important; }
+  .login-btn { font-size: 9px !important; padding: 5px !important; min-width: 26px; }
   .hamburger span { width: 18px !important; height: 2px !important; }
 
   .hero-carousel { height: 35vh !important; }
