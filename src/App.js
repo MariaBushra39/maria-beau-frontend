@@ -159,7 +159,20 @@ function AppContent() {
   };
 
   if (loading) {
-    return <div className="loading">⏳ LOADING ...</div>;
+    return (
+      <div className="home-skeleton">
+        <div className="skeleton-hero shimmer"></div>
+        <div className="skeleton-grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div className="skeleton-card" key={i}>
+              <div className="skeleton-image shimmer"></div>
+              <div className="skeleton-line shimmer" style={{ width: '80%' }}></div>
+              <div className="skeleton-line shimmer" style={{ width: '40%' }}></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   // ===== SORTED PRODUCTS =====
@@ -204,8 +217,13 @@ function AppContent() {
             src={getImageUrl(product.images)}
             alt={product.name} 
             className="product-img" 
+            loading="lazy"
+            decoding="async"
+            style={{ opacity: 0, transition: 'opacity 0.4s ease' }}
+            onLoad={(e) => { e.target.style.opacity = 1; }}
             onError={(e) => {
               e.target.src = 'https://placehold.co/300x400?text=Image+Not+Found';
+              e.target.style.opacity = 1;
             }}
           />
           {product.discount_price && (
