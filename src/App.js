@@ -8,6 +8,7 @@ import {
   FaInstagram, FaFacebook, FaTwitter, FaPinterest,
   FaChevronLeft, FaChevronRight, FaTimes
 } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 // ===== API URL =====
 import API_URL from './api';
 
@@ -55,7 +56,7 @@ function AppContent() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [offerIndex, setOfferIndex] = useState(0);
   const { user, logout } = useAuth();
-  const { getTotalItems } = useCart();
+  const { getTotalItems, addToCart } = useCart();
 
   // ===== OFFER BAR MESSAGES =====
   const offers = useMemo(() => [
@@ -146,6 +147,17 @@ function AppContent() {
     window.location.href = `/product/${productId}`;
   };
 
+  // Quick "Add to Cart" from the product card icon (no size/color picker here,
+  // so we default to the first available size/color — user can change it
+  // later from the Cart page if needed).
+  const handleQuickAdd = (e, product) => {
+    e.stopPropagation(); // don't trigger the card click (navigate to product page)
+    const defaultSize = Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes[0] : null;
+    const defaultColor = Array.isArray(product.colors) && product.colors.length > 0 ? product.colors[0] : null;
+    addToCart(product, 1, defaultSize, defaultColor);
+    toast.success(`${product.name} added to cart!`);
+  };
+
   if (loading) {
     return <div className="loading">⏳ LOADING ...</div>;
   }
@@ -201,6 +213,13 @@ function AppContent() {
               {Math.round((1 - product.discount_price / product.price) * 100)}% OFF
             </span>
           )}
+          <button
+            className="quick-add-btn"
+            onClick={(e) => handleQuickAdd(e, product)}
+            aria-label={`Add ${product.name} to cart`}
+          >
+            <FaShoppingCart />
+          </button>
         </div>
         <h3 className="product-name">{product.name}</h3>
         <div className="price-wrapper">
@@ -419,7 +438,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">New Arrivals</h2>
+              <h2 className="section-title">✨ New Arrivals</h2>
               <div className="product-grid">
                 {newArrivals.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
@@ -430,7 +449,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">Best Sellers</h2>
+              <h2 className="section-title">🔥 Best Sellers</h2>
               <div className="product-grid">
                 {bestSellers.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>

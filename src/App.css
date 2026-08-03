@@ -546,6 +546,48 @@ body {
 .product-image-wrapper:hover .product-img {
   transform: scale(1.05);
 }
+
+/* ===== QUICK ADD TO CART ICON (on product card, top-right) ===== */
+.quick-add-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #1a1a1a;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.25s ease, color 0.25s ease;
+}
+.product-image-wrapper:hover .quick-add-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+.quick-add-btn:hover {
+  background: #1a1a1a;
+  color: #fff;
+  transform: translateY(0) scale(1.1);
+}
+.quick-add-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+/* Touch devices (mobile/tablet) don't have hover, so keep it visible always */
+@media (max-width: 992px) {
+  .quick-add-btn {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .product-img-placeholder {
   width: 100%;
   height: 450px;
