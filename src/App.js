@@ -80,29 +80,34 @@ function AppContent() {
   // ===== HERO SLIDES (useMemo for stability) =====
   const slides = useMemo(() => [
     {
-      image: 'https://images.pexels.com/photos/20593503/pexels-photo-20593503.jpeg',
+      image: 'https://images.pexels.com/photos/20593503/pexels-photo-20593503.jpeg?auto=compress&cs=tinysrgb&w=1600',
       title: 'New Summer Collection 2026',
-      subtitle: 'Style That Defines You'
+      subtitle: 'Style That Defines You',
+      link: '/women'
     },
     {
-      image: 'https://images.pexels.com/photos/3755706/pexels-photo-3755706.jpeg',
+      image: 'https://images.pexels.com/photos/3755706/pexels-photo-3755706.jpeg?auto=compress&cs=tinysrgb&w=1600',
       title: "Men's Luxury Edit",
-      subtitle: 'Timeless Elegance'
+      subtitle: 'Timeless Elegance',
+      link: '/men'
     },
     {
-      image: 'https://images.pexels.com/photos/18472915/pexels-photo-18472915.jpeg',
+      image: 'https://images.pexels.com/photos/18472915/pexels-photo-18472915.jpeg?auto=compress&cs=tinysrgb&w=1600',
       title: 'Kids Festive Collection',
-      subtitle: 'Playful & Chic'
+      subtitle: 'Playful & Chic',
+      link: '/kids'
     },
     {
-      image: 'https://images.pexels.com/photos/36608749/pexels-photo-36608749.jpeg',
+      image: 'https://images.pexels.com/photos/36608749/pexels-photo-36608749.jpeg?auto=compress&cs=tinysrgb&w=1600',
       title: 'Ready to Wear',
-      subtitle: 'Everyday Glamour'
+      subtitle: 'Everyday Glamour',
+      link: '/women/ready-to-wear'
     },
     {
-      image: 'https://images.pexels.com/photos/33365139/pexels-photo-33365139.jpeg',
+      image: 'https://images.pexels.com/photos/33365139/pexels-photo-33365139.jpeg?auto=compress&cs=tinysrgb&w=1600',
       title: 'Western Collection',
-      subtitle: 'Global Trends, Local Love'
+      subtitle: 'Global Trends, Local Love',
+      link: '/women/western'
     }
   ], []);
 
@@ -223,6 +228,33 @@ function AppContent() {
     if (!createdAt) return false;
     const daysSince = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24);
     return daysSince <= 14;
+  };
+
+  // ===== CIRCLE CATEGORY SHOWCASE (below hero) =====
+  // Uses the first matching product's image as the representative photo.
+  const circleShowcase = [
+    { label: 'Women', sub: 'Unstitched', link: '/women/unstitched', category: 'women', subcategory: 'unstitched' },
+    { label: 'Men', sub: 'Formal', link: '/men/formal', category: 'men', subcategory: 'formal' },
+    { label: 'Kids', sub: 'Girls & Boys', link: '/kids', category: 'kids', subcategory: null }
+  ];
+
+  const getCircleImage = (category, subcategory) => {
+    const match = products.find(p => {
+      const pCategory = (p.category || '').toLowerCase().trim();
+      if (pCategory !== category) return false;
+      if (subcategory) {
+        const pSub = (p.subcategory || '').toLowerCase().trim();
+        return pSub === subcategory;
+      }
+      return true;
+    });
+    if (!match || !match.images || !Array.isArray(match.images) || match.images.length === 0) {
+      return 'https://placehold.co/300x300?text=No+Image';
+    }
+    const img = match.images[0];
+    if (typeof img === 'string' && img.startsWith('http')) return img;
+    if (typeof img === 'string') return `${API_URL}/uploads/${img}`;
+    return 'https://placehold.co/300x300?text=No+Image';
   };
 
   // ===== RENDER PRODUCT CARD — SAFE IMAGE HANDLING =====
@@ -491,7 +523,7 @@ function AppContent() {
                 <div className="hero-content">
                   <h1>{slides[currentSlide].title}</h1>
                   <p>{slides[currentSlide].subtitle}</p>
-                  <button className="hero-btn">Shop Now →</button>
+                  <Link to={slides[currentSlide].link} className="hero-btn">Shop Now →</Link>
                 </div>
               </div>
               <button className="carousel-btn left" onClick={prevSlide}>
@@ -507,6 +539,24 @@ function AppContent() {
                     className={`dot ${currentSlide === index ? 'active' : ''}`}
                     onClick={() => setCurrentSlide(index)}
                   ></span>
+                ))}
+              </div>
+            </section>
+
+            <section className="circle-showcase-section">
+              <div className="circle-showcase-row">
+                {circleShowcase.map((item) => (
+                  <Link to={item.link} key={item.label + item.sub} className="circle-showcase-item">
+                    <div className="circle-showcase-img-wrap">
+                      <img
+                        src={getCircleImage(item.category, item.subcategory)}
+                        alt={`${item.label} ${item.sub}`}
+                        loading="lazy"
+                      />
+                    </div>
+                    <span className="circle-showcase-label">{item.label}</span>
+                    <span className="circle-showcase-sub">{item.sub}</span>
+                  </Link>
                 ))}
               </div>
             </section>

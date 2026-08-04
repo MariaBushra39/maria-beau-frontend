@@ -500,6 +500,7 @@ body {
   opacity: 0.9;
 }
 .hero-btn {
+  display: inline-block;
   margin-top: 30px;
   padding: 14px 44px;
   background: #fff;
@@ -508,6 +509,7 @@ body {
   font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
+  text-decoration: none;
   cursor: pointer;
   transition: 0.3s;
   font-weight: 600;
@@ -1155,10 +1157,10 @@ body {
   }
   .logo {
     font-size: 20px !important;
-    position: static !important;
-    transform: none !important;
-    left: auto !important;
-    top: auto !important;
+    position: absolute !important;
+    left: 44% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
   }
   .logo-part1, .logo-part2 {
     font-size: 20px !important;
@@ -1472,4 +1474,80 @@ body {
 }
 @media (max-width: 768px) {
   .wishlist-header h1 { font-size: 22px; }
+}
+
+/* ================================================================
+   CIRCLE CATEGORY SHOWCASE (below hero banner)
+   ================================================================ */
+.circle-showcase-section {
+  max-width: 900px;
+  width: 92%;
+  margin: 36px auto;
+  padding: 0;
+}
+.circle-showcase-row {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+.circle-showcase-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.circle-showcase-item:hover {
+  transform: translateY(-4px);
+}
+.circle-showcase-img-wrap {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #f0ebe5;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.circle-showcase-item:hover .circle-showcase-img-wrap {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.14);
+  border-color: #E8B84B;
+}
+.circle-showcase-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.circle-showcase-label {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1a1a1a;
+}
+.circle-showcase-sub {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.5px;
+}
+@media (max-width: 768px) {
+  .circle-showcase-row {
+    gap: 24px;
+  }
+  .circle-showcase-img-wrap {
+    width: 82px;
+    height: 82px;
+  }
+  .circle-showcase-label {
+    font-size: 11px;
+  }
+  .circle-showcase-sub {
+    font-size: 10px;
+  }
 }
