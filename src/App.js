@@ -554,7 +554,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">✨ New Arrivals</h2>
+              <h2 className="section-title">New Arrivals</h2>
               <div className="product-grid">
                 {newArrivals.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
@@ -565,7 +565,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">🔥 Best Sellers</h2>
+              <h2 className="section-title">Best Sellers</h2>
               <div className="product-grid">
                 {bestSellers.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
