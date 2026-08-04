@@ -23,6 +23,7 @@ function EditProduct() {
     name: '',
     description: '',
     price: '',
+    discount_price: '',
     category: 'Women',
     subcategory: '',
     sizes: '',
@@ -43,6 +44,7 @@ function EditProduct() {
             name: p.name || '',
             description: p.description || '',
             price: p.price || '',
+            discount_price: p.discount_price || '',
             category: p.category || 'Women',
             subcategory: p.subcategory || '',
             sizes: (p.sizes || []).join(', '),
@@ -139,6 +141,7 @@ function EditProduct() {
       name: formData.name,
       description: formData.description,
       price: parseFloat(formData.price),
+      discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
       category: formData.category,
       subcategory: formData.subcategory || null,
       sizes: sizesArray,
@@ -203,6 +206,20 @@ function EditProduct() {
               onChange={handleChange}
               required
             />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Discount Price (Rs.) — optional</label>
+            <input
+              type="number"
+              name="discount_price"
+              value={formData.discount_price}
+              onChange={handleChange}
+              placeholder="Leave empty if no discount"
+            />
+            <small>If set, this product will show a sale badge and appear on the Sale page.</small>
           </div>
         </div>
 

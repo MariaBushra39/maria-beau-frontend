@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { FaShoppingCart, FaHeart, FaRegHeart } from 'react-icons/fa';
 import Page from './Page';
 import API_URL from '../api';
+import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 // ===== SAFE IMAGE URL EXTRACTOR =====
 const getImageUrl = (images) => {
@@ -26,9 +30,18 @@ const getImageUrl = (images) => {
   return 'https://placehold.co/300x400?text=Image+Error';
 };
 
+// Same "NEW" rule used on the homepage and category pages, kept consistent.
+const isNewProduct = (createdAt) => {
+  if (!createdAt) return false;
+  const daysSince = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24);
+  return daysSince <= 14;
+};
+
 function NewArrivals() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   useEffect(() => {
     fetch(`${API_URL}/api/products`)
@@ -42,6 +55,21 @@ function NewArrivals() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  const handleQuickAdd = (e, product) => {
+    e.stopPropagation();
+    const defaultSize = Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes[0] : null;
+    const defaultColor = Array.isArray(product.colors) && product.colors.length > 0 ? product.colors[0] : null;
+    addToCart(product, 1, defaultSize, defaultColor);
+    toast.success(`${product.name} added to cart!`);
+  };
+
+  const handleWishlistToggle = (e, product) => {
+    e.stopPropagation();
+    const wasInWishlist = isInWishlist(product.id);
+    toggleWishlist(product);
+    toast.success(wasInWishlist ? `${product.name} removed from wishlist` : `${product.name} added to wishlist!`);
+  };
 
   if (loading) return <div className="loading">LOADING ...</div>;
 
@@ -64,15 +92,36 @@ function NewArrivals() {
                   src={getImageUrl(product.images)}
                   alt={product.name} 
                   className="product-img" 
+                  loading="lazy"
+                  decoding="async"
+                  style={{ opacity: 0, transition: 'opacity 0.4s ease' }}
+                  onLoad={(e) => { e.target.style.opacity = 1; }}
                   onError={(e) => {
                     e.target.src = 'https://placehold.co/300x400?text=Image+Not+Found';
+                    e.target.style.opacity = 1;
                   }}
                 />
-                {product.discount_price && (
+                {product.discount_price ? (
                   <span className="sale-badge">
                     {Math.round((1 - product.discount_price / product.price) * 100)}% OFF
                   </span>
-                )}
+                ) : isNewProduct(product.created_at) ? (
+                  <span className="sale-badge new-badge">NEW</span>
+                ) : null}
+                <button
+                  className="quick-add-btn"
+                  onClick={(e) => handleQuickAdd(e, product)}
+                  aria-label={`Add ${product.name} to cart`}
+                >
+                  <FaShoppingCart />
+                </button>
+                <button
+                  className={`wishlist-toggle-btn ${isInWishlist(product.id) ? 'active' : ''}`}
+                  onClick={(e) => handleWishlistToggle(e, product)}
+                  aria-label={`Toggle ${product.name} in wishlist`}
+                >
+                  {isInWishlist(product.id) ? <FaHeart /> : <FaRegHeart />}
+                </button>
               </div>
               <h3 className="product-name">{product.name}</h3>
               <div className="price-wrapper">

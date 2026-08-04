@@ -21,6 +21,7 @@ function AddProduct() {
     name: '',
     description: '',
     price: '',
+    discount_price: '',
     category: 'Women',
     subcategory: '',
     sizes: '',
@@ -107,6 +108,7 @@ function AddProduct() {
       name: formData.name,
       description: formData.description,
       price: parseFloat(formData.price),
+      discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
       category: formData.category,
       subcategory: formData.subcategory || null,
       sizes: sizesArray,
@@ -171,6 +173,20 @@ function AddProduct() {
               required
               placeholder="4990"
             />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Discount Price (Rs.) — optional</label>
+            <input
+              type="number"
+              name="discount_price"
+              value={formData.discount_price}
+              onChange={handleChange}
+              placeholder="Leave empty if no discount"
+            />
+            <small>If set, this product will show a sale badge and appear on the Sale page.</small>
           </div>
         </div>
 
