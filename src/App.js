@@ -244,6 +244,17 @@ function AppContent() {
     { label: 'Boys', link: '/kids/boys', category: 'kids', subcategory: 'boys' }
   ];
 
+  // Requests a properly-sized, sharp version from Cloudinary instead of
+  // relying on the browser to downscale a mismatched-size image (which
+  // was causing the blur on desktop). Non-Cloudinary URLs pass through untouched.
+  const getSharpImageUrl = (url) => {
+    if (!url || typeof url !== 'string') return url;
+    if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+      return url.replace('/upload/', '/upload/w_500,h_500,c_fill,g_auto,q_auto,f_auto/');
+    }
+    return url;
+  };
+
   const getCircleImage = (category, subcategory) => {
     const match = products.find(p => {
       const pCategory = (p.category || '').toLowerCase().trim();
@@ -257,8 +268,9 @@ function AppContent() {
     if (!match || !match.images || !Array.isArray(match.images) || match.images.length === 0) {
       return 'https://placehold.co/300x300?text=No+Image';
     }
-    const img = match.images[0];
-    if (typeof img === 'string' && img.startsWith('http')) return img;
+    // Prefer the 2nd image (a nicer close-up/detail shot usually), fall back to the 1st if there's only one.
+    const img = match.images.length > 1 ? match.images[1] : match.images[0];
+    if (typeof img === 'string' && img.startsWith('http')) return getSharpImageUrl(img);
     if (typeof img === 'string') return `${API_URL}/uploads/${img}`;
     return 'https://placehold.co/300x300?text=No+Image';
   };
