@@ -233,30 +233,15 @@ function AppContent() {
   // ===== SUBCATEGORY SLIDER (below hero) — grouped by main category =====
   // Uses only subcategories that actually exist in the site's navigation
   // and product data. Circle image = first matching product's photo.
-  const subcategorySliders = [
-    {
-      heading: 'WOMEN',
-      items: [
-        { label: 'Ready to Wear', link: '/women/ready-to-wear', category: 'women', subcategory: 'ready to wear' },
-        { label: 'Unstitched', link: '/women/unstitched', category: 'women', subcategory: 'unstitched' },
-        { label: 'Western', link: '/women/western', category: 'women', subcategory: 'western' }
-      ]
-    },
-    {
-      heading: 'MEN',
-      items: [
-        { label: 'Casual', link: '/men/casual', category: 'men', subcategory: 'casual' },
-        { label: 'Formal', link: '/men/formal', category: 'men', subcategory: 'formal' },
-        { label: 'Ethnic', link: '/men/ethnic', category: 'men', subcategory: 'ethnic' }
-      ]
-    },
-    {
-      heading: 'KIDS',
-      items: [
-        { label: 'Girls', link: '/kids/girls', category: 'kids', subcategory: 'girls' },
-        { label: 'Boys', link: '/kids/boys', category: 'kids', subcategory: 'boys' }
-      ]
-    }
+  const subcategoryShowcase = [
+    { label: 'Ready to Wear', link: '/women/ready-to-wear', category: 'women', subcategory: 'ready to wear' },
+    { label: 'Unstitched', link: '/women/unstitched', category: 'women', subcategory: 'unstitched' },
+    { label: 'Western', link: '/women/western', category: 'women', subcategory: 'western' },
+    { label: 'Casual', link: '/men/casual', category: 'men', subcategory: 'casual' },
+    { label: 'Formal', link: '/men/formal', category: 'men', subcategory: 'formal' },
+    { label: 'Ethnic', link: '/men/ethnic', category: 'men', subcategory: 'ethnic' },
+    { label: 'Girls', link: '/kids/girls', category: 'kids', subcategory: 'girls' },
+    { label: 'Boys', link: '/kids/boys', category: 'kids', subcategory: 'boys' }
   ];
 
   const getCircleImage = (category, subcategory) => {
@@ -581,25 +566,20 @@ function AppContent() {
             </section>
 
             <section className="subcat-showcase-section">
-              {subcategorySliders.map((row) => (
-                <div className="subcat-slider-block" key={row.heading}>
-                  <h4 className="subcat-slider-heading">{row.heading}</h4>
-                  <div className="subcat-slider-row" onWheel={handleSliderWheel}>
-                    {row.items.map((item) => (
-                      <Link to={item.link} key={item.label} className="subcat-slider-item">
-                        <div className="subcat-slider-img-wrap">
-                          <img
-                            src={getCircleImage(item.category, item.subcategory)}
-                            alt={item.label}
-                            loading="lazy"
-                          />
-                        </div>
-                        <span className="subcat-slider-label">{item.label}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
+              <div className="subcat-slider-row" onWheel={handleSliderWheel}>
+                {subcategoryShowcase.map((item) => (
+                  <Link to={item.link} key={item.label} className="subcat-slider-item">
+                    <div className="subcat-slider-img-wrap">
+                      <img
+                        src={getCircleImage(item.category, item.subcategory)}
+                        alt={item.label}
+                        loading="lazy"
+                      />
+                    </div>
+                    <span className="subcat-slider-label">{item.label}</span>
+                  </Link>
+                ))}
+              </div>
             </section>
 
             <section className="category-section">

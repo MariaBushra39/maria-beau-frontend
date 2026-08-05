@@ -1144,11 +1144,12 @@ body {
   .navbar-top {
     display: flex;
     flex-direction: row !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
     align-items: center !important;
     padding: 10px 4% !important;
     min-height: 44px !important;
     flex-wrap: nowrap !important;
+    gap: 12px;
   }
   .navbar-left {
     display: flex;
@@ -1157,10 +1158,10 @@ body {
   }
   .logo {
     font-size: 20px !important;
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
   }
   .logo-part1, .logo-part2 {
     font-size: 20px !important;
@@ -1168,6 +1169,7 @@ body {
   .nav-icons {
     display: flex;
     align-items: center;
+    margin-left: auto;
     gap: 8px;
     font-size: 16px;
   }
@@ -1557,46 +1559,26 @@ body {
 }
 
 /* ================================================================
-   SUBCATEGORY SLIDER (Women/Men/Kids rows, below hero banner)
+   SUBCATEGORY SLIDER (single premium horizontal row, below hero banner)
    ================================================================ */
 .subcat-showcase-section {
-  max-width: 1600px;
-  width: 94%;
+  width: 100%;
   margin: 0 auto 8px;
-  padding: 8px 0;
-}
-.subcat-slider-block {
-  margin-bottom: 32px;
-}
-.subcat-slider-block:last-child {
-  margin-bottom: 0;
-}
-.subcat-slider-heading {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: #1a1a1a;
-  text-transform: uppercase;
-  margin: 0 0 14px 4px;
+  padding: 12px 0;
 }
 .subcat-slider-row {
   display: flex;
-  gap: 28px;
+  justify-content: center;
+  gap: 30px;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 4px 4px 10px;
-  scrollbar-width: thin;
-  scrollbar-color: #e5ddd0 transparent;
+  padding: 6px 40px 14px;
+  /* Hide scrollbar across browsers while keeping scroll functional */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .subcat-slider-row::-webkit-scrollbar {
-  height: 5px;
-}
-.subcat-slider-row::-webkit-scrollbar-thumb {
-  background: #e5ddd0;
-  border-radius: 10px;
-}
-.subcat-slider-row::-webkit-scrollbar-track {
-  background: transparent;
+  display: none;
 }
 .subcat-slider-item {
   display: flex;
@@ -1605,58 +1587,58 @@ body {
   text-decoration: none;
   cursor: pointer;
   flex-shrink: 0;
-  transition: transform 0.3s ease;
+  transition: transform 0.35s ease;
 }
 .subcat-slider-item:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
 }
 .subcat-slider-img-wrap {
-  width: 100px;
-  height: 100px;
+  width: 176px;
+  height: 176px;
   border-radius: 50%;
   overflow: hidden;
   border: 1px solid #f0ebe5;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.35s ease, border-color 0.35s ease, transform 0.35s ease;
 }
 .subcat-slider-item:hover .subcat-slider-img-wrap {
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
   border-color: #E8B84B;
+  transform: scale(1.04);
 }
 .subcat-slider-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top;
+  object-position: top center;
   display: block;
+  transition: transform 0.35s ease;
 }
 .subcat-slider-label {
-  margin-top: 10px;
-  font-size: 12px;
-  font-weight: 600;
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 700;
   letter-spacing: 0.5px;
   color: #1a1a1a;
   white-space: nowrap;
+  text-align: center;
 }
 @media (max-width: 768px) {
   .subcat-showcase-section {
-    width: 100%;
-    padding: 8px 0;
-  }
-  .subcat-slider-heading {
-    margin-left: 16px;
-    font-size: 12px;
+    padding: 10px 0;
   }
   .subcat-slider-row {
+    justify-content: flex-start;
     gap: 18px;
-    padding: 4px 16px 10px;
+    padding: 6px 20px 14px;
     -webkit-overflow-scrolling: touch;
   }
   .subcat-slider-img-wrap {
-    width: 84px;
-    height: 84px;
+    width: 148px;
+    height: 148px;
   }
   .subcat-slider-label {
-    font-size: 11px;
+    font-size: 12px;
+    margin-top: 10px;
   }
 }
