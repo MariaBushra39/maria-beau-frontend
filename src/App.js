@@ -230,12 +230,33 @@ function AppContent() {
     return daysSince <= 14;
   };
 
-  // ===== CIRCLE CATEGORY SHOWCASE (below hero) =====
-  // Uses the first matching product's image as the representative photo.
-  const circleShowcase = [
-    { label: 'Women', sub: 'Unstitched', link: '/women/unstitched', category: 'women', subcategory: 'unstitched' },
-    { label: 'Men', sub: 'Formal', link: '/men/formal', category: 'men', subcategory: 'formal' },
-    { label: 'Kids', sub: 'Girls & Boys', link: '/kids', category: 'kids', subcategory: null }
+  // ===== SUBCATEGORY SLIDER (below hero) — grouped by main category =====
+  // Uses only subcategories that actually exist in the site's navigation
+  // and product data. Circle image = first matching product's photo.
+  const subcategorySliders = [
+    {
+      heading: 'WOMEN',
+      items: [
+        { label: 'Ready to Wear', link: '/women/ready-to-wear', category: 'women', subcategory: 'ready to wear' },
+        { label: 'Unstitched', link: '/women/unstitched', category: 'women', subcategory: 'unstitched' },
+        { label: 'Western', link: '/women/western', category: 'women', subcategory: 'western' }
+      ]
+    },
+    {
+      heading: 'MEN',
+      items: [
+        { label: 'Casual', link: '/men/casual', category: 'men', subcategory: 'casual' },
+        { label: 'Formal', link: '/men/formal', category: 'men', subcategory: 'formal' },
+        { label: 'Ethnic', link: '/men/ethnic', category: 'men', subcategory: 'ethnic' }
+      ]
+    },
+    {
+      heading: 'KIDS',
+      items: [
+        { label: 'Girls', link: '/kids/girls', category: 'kids', subcategory: 'girls' },
+        { label: 'Boys', link: '/kids/boys', category: 'kids', subcategory: 'boys' }
+      ]
+    }
   ];
 
   const getCircleImage = (category, subcategory) => {
@@ -255,6 +276,13 @@ function AppContent() {
     if (typeof img === 'string' && img.startsWith('http')) return img;
     if (typeof img === 'string') return `${API_URL}/uploads/${img}`;
     return 'https://placehold.co/300x300?text=No+Image';
+  };
+
+  // Lets desktop users scroll the row horizontally with a normal mouse
+  // wheel (converts vertical wheel movement into horizontal scroll).
+  const handleSliderWheel = (e) => {
+    if (e.deltaY === 0) return;
+    e.currentTarget.scrollLeft += e.deltaY;
   };
 
   // ===== RENDER PRODUCT CARD — SAFE IMAGE HANDLING =====
@@ -543,28 +571,42 @@ function AppContent() {
               </div>
             </section>
 
-            <section className="circle-showcase-section">
-              <div className="circle-showcase-row">
-                {circleShowcase.map((item) => (
-                  <Link to={item.link} key={item.label + item.sub} className="circle-showcase-item">
-                    <div className="circle-showcase-img-wrap">
-                      <img
-                        src={getCircleImage(item.category, item.subcategory)}
-                        alt={`${item.label} ${item.sub}`}
-                        loading="lazy"
-                      />
-                    </div>
-                    <span className="circle-showcase-label">{item.label}</span>
-                    <span className="circle-showcase-sub">{item.sub}</span>
-                  </Link>
-                ))}
+            <section className="shop-by-category-divider">
+              <span className="divider-line"></span>
+              <div className="divider-text">
+                <h3>Shop By Category</h3>
+                <p>Explore Our Collections</p>
               </div>
+              <span className="divider-line"></span>
+            </section>
+
+            <section className="subcat-showcase-section">
+              {subcategorySliders.map((row) => (
+                <div className="subcat-slider-block" key={row.heading}>
+                  <h4 className="subcat-slider-heading">{row.heading}</h4>
+                  <div className="subcat-slider-row" onWheel={handleSliderWheel}>
+                    {row.items.map((item) => (
+                      <Link to={item.link} key={item.label} className="subcat-slider-item">
+                        <div className="subcat-slider-img-wrap">
+                          <img
+                            src={getCircleImage(item.category, item.subcategory)}
+                            alt={item.label}
+                            loading="lazy"
+                          />
+                        </div>
+                        <span className="subcat-slider-label">{item.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </section>
 
             <section className="category-section">
-              <div className="category-header">
-                <h2>Women</h2>
-                <Link to="/women" className="view-all">View All →</Link>
+              <div className="shop-heading-block">
+                <h2>Shop Women</h2>
+                <p>Discover New Arrivals</p>
+                <span className="shop-heading-line"></span>
               </div>
               <div className="product-grid">
                 {products.filter(p => p.category === 'Women').slice(0, 4).length === 0 ? (
@@ -573,12 +615,16 @@ function AppContent() {
                   products.filter(p => p.category === 'Women').slice(0, 4).map(product => renderProduct(product))
                 )}
               </div>
+              <div className="view-all-center">
+                <Link to="/women" className="view-all">View All →</Link>
+              </div>
             </section>
 
             <section className="category-section">
-              <div className="category-header">
-                <h2>Men</h2>
-                <Link to="/men" className="view-all">View All →</Link>
+              <div className="shop-heading-block">
+                <h2>Shop Men</h2>
+                <p>Classic &amp; Modern Styles</p>
+                <span className="shop-heading-line"></span>
               </div>
               <div className="product-grid">
                 {products.filter(p => p.category === 'Men').slice(0, 4).length === 0 ? (
@@ -587,12 +633,16 @@ function AppContent() {
                   products.filter(p => p.category === 'Men').slice(0, 4).map(product => renderProduct(product))
                 )}
               </div>
+              <div className="view-all-center">
+                <Link to="/men" className="view-all">View All →</Link>
+              </div>
             </section>
 
             <section className="category-section">
-              <div className="category-header">
-                <h2>Kids</h2>
-                <Link to="/kids" className="view-all">View All →</Link>
+              <div className="shop-heading-block">
+                <h2>Shop Kids</h2>
+                <p>Cute Styles For Little Ones</p>
+                <span className="shop-heading-line"></span>
               </div>
               <div className="product-grid">
                 {products.filter(p => p.category === 'Kids').slice(0, 4).length === 0 ? (
@@ -600,6 +650,9 @@ function AppContent() {
                 ) : (
                   products.filter(p => p.category === 'Kids').slice(0, 4).map(product => renderProduct(product))
                 )}
+              </div>
+              <div className="view-all-center">
+                <Link to="/kids" className="view-all">View All →</Link>
               </div>
             </section>
 

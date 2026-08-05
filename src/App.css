@@ -1158,7 +1158,7 @@ body {
   .logo {
     font-size: 20px !important;
     position: absolute !important;
-    left: 44% !important;
+    left: 50% !important;
     top: 50% !important;
     transform: translate(-50%, -50%) !important;
   }
@@ -1477,77 +1477,186 @@ body {
 }
 
 /* ================================================================
-   CIRCLE CATEGORY SHOWCASE (below hero banner)
+   PREMIUM CENTERED SHOP HEADINGS (Women/Men/Kids sections)
    ================================================================ */
-.circle-showcase-section {
-  max-width: 900px;
-  width: 92%;
-  margin: 36px auto;
-  padding: 0;
+.shop-heading-block {
+  text-align: center;
+  margin: 0 auto 28px;
 }
-.circle-showcase-row {
+.shop-heading-block h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  margin: 0;
+}
+.shop-heading-block p {
+  font-size: 13px;
+  color: #999;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 8px;
+  font-weight: 400;
+}
+.shop-heading-line {
+  display: block;
+  width: 56px;
+  height: 2px;
+  background: #E8B84B;
+  margin: 14px auto 0;
+}
+.view-all-center {
+  text-align: center;
+  margin-top: 24px;
+}
+
+/* ================================================================
+   SHOP BY CATEGORY DIVIDER
+   ================================================================ */
+.shop-by-category-divider {
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 48px;
-  flex-wrap: wrap;
+  gap: 24px;
+  max-width: 700px;
+  width: 90%;
+  margin: 44px auto 8px;
 }
-.circle-showcase-item {
+.shop-by-category-divider .divider-line {
+  flex: 1;
+  height: 1px;
+  background: #e5ddd0;
+}
+.divider-text {
+  text-align: center;
+  flex-shrink: 0;
+}
+.divider-text h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  margin: 0;
+}
+.divider-text p {
+  font-size: 12px;
+  color: #999;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+@media (max-width: 768px) {
+  .shop-heading-block h2 { font-size: 22px; letter-spacing: 2px; }
+  .shop-heading-block p { font-size: 11px; }
+  .shop-by-category-divider { margin: 32px auto 4px; gap: 14px; }
+  .divider-text h3 { font-size: 17px; }
+  .divider-text p { font-size: 10px; }
+}
+
+/* ================================================================
+   SUBCATEGORY SLIDER (Women/Men/Kids rows, below hero banner)
+   ================================================================ */
+.subcat-showcase-section {
+  max-width: 1600px;
+  width: 94%;
+  margin: 0 auto 8px;
+  padding: 8px 0;
+}
+.subcat-slider-block {
+  margin-bottom: 32px;
+}
+.subcat-slider-block:last-child {
+  margin-bottom: 0;
+}
+.subcat-slider-heading {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  margin: 0 0 14px 4px;
+}
+.subcat-slider-row {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 4px 4px 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #e5ddd0 transparent;
+}
+.subcat-slider-row::-webkit-scrollbar {
+  height: 5px;
+}
+.subcat-slider-row::-webkit-scrollbar-thumb {
+  background: #e5ddd0;
+  border-radius: 10px;
+}
+.subcat-slider-row::-webkit-scrollbar-track {
+  background: transparent;
+}
+.subcat-slider-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-decoration: none;
   cursor: pointer;
+  flex-shrink: 0;
   transition: transform 0.3s ease;
 }
-.circle-showcase-item:hover {
+.subcat-slider-item:hover {
   transform: translateY(-4px);
 }
-.circle-showcase-img-wrap {
-  width: 110px;
-  height: 110px;
+.subcat-slider-img-wrap {
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   overflow: hidden;
   border: 1px solid #f0ebe5;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
-.circle-showcase-item:hover .circle-showcase-img-wrap {
+.subcat-slider-item:hover .subcat-slider-img-wrap {
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.14);
   border-color: #E8B84B;
 }
-.circle-showcase-img-wrap img {
+.subcat-slider-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top;
   display: block;
 }
-.circle-showcase-label {
-  margin-top: 12px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: #1a1a1a;
-}
-.circle-showcase-sub {
-  margin-top: 2px;
-  font-size: 11px;
-  color: #888;
+.subcat-slider-label {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.5px;
+  color: #1a1a1a;
+  white-space: nowrap;
 }
 @media (max-width: 768px) {
-  .circle-showcase-row {
-    gap: 24px;
+  .subcat-showcase-section {
+    width: 100%;
+    padding: 8px 0;
   }
-  .circle-showcase-img-wrap {
-    width: 82px;
-    height: 82px;
+  .subcat-slider-heading {
+    margin-left: 16px;
+    font-size: 12px;
   }
-  .circle-showcase-label {
+  .subcat-slider-row {
+    gap: 18px;
+    padding: 4px 16px 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .subcat-slider-img-wrap {
+    width: 84px;
+    height: 84px;
+  }
+  .subcat-slider-label {
     font-size: 11px;
-  }
-  .circle-showcase-sub {
-    font-size: 10px;
   }
 }
