@@ -217,10 +217,26 @@ function AppContent() {
     );
   }
 
-  // ===== SORTED PRODUCTS =====
+  // ===== HOMEPAGE PRODUCT SELECTION (avoids showing the same product twice) =====
+  // Women/Men/Kids previews use the 2nd–5th product in that category
+  // (skipping the 1st, which is already the hero/most prominent item elsewhere).
+  const womenPreview = products.filter(p => p.category === 'Women').slice(1, 5);
+  const menPreview = products.filter(p => p.category === 'Men').slice(1, 5);
+  const kidsPreview = products.filter(p => p.category === 'Kids').slice(1, 5);
+
+  // Track every product ID already shown above so later sections never repeat them.
+  const shownIds = new Set([...womenPreview, ...menPreview, ...kidsPreview].map(p => p.id));
+
   const sortedProducts = [...products].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  const newArrivals = sortedProducts.slice(0, 4);
-  const bestSellers = sortedProducts.slice(4, 8);
+  const remainingSorted = sortedProducts.filter(p => !shownIds.has(p.id));
+
+  // New Arrivals: the 6th–9th latest products among what's left (not shown above).
+  const newArrivals = remainingSorted.slice(5, 9);
+  const newArrivalIds = new Set(newArrivals.map(p => p.id));
+
+  // Best Sellers: no real sales-based ranking exists yet, so we simply show
+  // whatever remaining products haven't appeared anywhere else on the homepage.
+  const bestSellers = remainingSorted.filter(p => !newArrivalIds.has(p.id)).slice(0, 4);
 
   // A product counts as "NEW" if it was added within the last 14 days.
   // Only shown when the product has no discount (discount badge takes priority).
@@ -601,10 +617,10 @@ function AppContent() {
                 <span className="shop-heading-line"></span>
               </div>
               <div className="product-grid">
-                {products.filter(p => p.category === 'Women').slice(0, 4).length === 0 ? (
+                {womenPreview.length === 0 ? (
                   <p className="empty-msg">No women products yet.</p>
                 ) : (
-                  products.filter(p => p.category === 'Women').slice(0, 4).map(product => renderProduct(product))
+                  womenPreview.map(product => renderProduct(product))
                 )}
               </div>
               <div className="view-all-center">
@@ -619,10 +635,10 @@ function AppContent() {
                 <span className="shop-heading-line"></span>
               </div>
               <div className="product-grid">
-                {products.filter(p => p.category === 'Men').slice(0, 4).length === 0 ? (
+                {menPreview.length === 0 ? (
                   <p className="empty-msg">No men products yet.</p>
                 ) : (
-                  products.filter(p => p.category === 'Men').slice(0, 4).map(product => renderProduct(product))
+                  menPreview.map(product => renderProduct(product))
                 )}
               </div>
               <div className="view-all-center">
@@ -637,10 +653,10 @@ function AppContent() {
                 <span className="shop-heading-line"></span>
               </div>
               <div className="product-grid">
-                {products.filter(p => p.category === 'Kids').slice(0, 4).length === 0 ? (
+                {kidsPreview.length === 0 ? (
                   <p className="empty-msg">No kids products yet.</p>
                 ) : (
-                  products.filter(p => p.category === 'Kids').slice(0, 4).map(product => renderProduct(product))
+                  kidsPreview.map(product => renderProduct(product))
                 )}
               </div>
               <div className="view-all-center">
@@ -649,7 +665,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">New Arrivals</h2>
+              <h2 className="section-title">✨ New Arrivals</h2>
               <div className="product-grid">
                 {newArrivals.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
@@ -660,7 +676,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">Best Sellers</h2>
+              <h2 className="section-title">🔥 Best Sellers</h2>
               <div className="product-grid">
                 {bestSellers.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
