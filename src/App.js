@@ -220,9 +220,9 @@ function AppContent() {
   // ===== HOMEPAGE PRODUCT SELECTION (avoids showing the same product twice) =====
   // Women/Men/Kids previews use the 2nd–5th product in that category
   // (skipping the 1st, which is already the hero/most prominent item elsewhere).
-  const womenPreview = products.filter(p => p.category === 'Women').slice(1, 5);
-  const menPreview = products.filter(p => p.category === 'Men').slice(1, 5);
-  const kidsPreview = products.filter(p => p.category === 'Kids').slice(1, 5);
+  const womenPreview = products.filter(p => p.category === 'Women').slice(5, 9);
+  const menPreview = products.filter(p => p.category === 'Men').slice(5, 9);
+  const kidsPreview = products.filter(p => p.category === 'Kids').slice(5, 9);
 
   // Track every product ID already shown above so later sections never repeat them.
   const shownIds = new Set([...womenPreview, ...menPreview, ...kidsPreview].map(p => p.id));
@@ -231,7 +231,7 @@ function AppContent() {
   const remainingSorted = sortedProducts.filter(p => !shownIds.has(p.id));
 
   // New Arrivals: the 6th–9th latest products among what's left (not shown above).
-  const newArrivals = remainingSorted.slice(5, 9);
+  const newArrivals = remainingSorted.slice(16, 20);
   const newArrivalIds = new Set(newArrivals.map(p => p.id));
 
   // Best Sellers: no real sales-based ranking exists yet, so we simply show
