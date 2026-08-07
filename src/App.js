@@ -6,7 +6,7 @@ import {
   FaSearch, FaRegHeart, FaHeart, FaShoppingCart, FaUser, 
   FaTruck, FaLock, FaUndo, FaGem, 
   FaInstagram, FaFacebook, FaTwitter, FaPinterest,
-  FaChevronLeft, FaChevronRight, FaTimes, FaSignOutAlt
+  FaChevronLeft, FaChevronRight, FaTimes, FaSignOutAlt, FaArrowUp
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 // ===== API URL =====
@@ -55,6 +55,7 @@ function AppContent() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [offerIndex, setOfferIndex] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -76,6 +77,19 @@ function AppContent() {
     }, 3000);
     return () => clearInterval(interval);
   }, [offers.length]);
+
+  // ===== SCROLL TO TOP BUTTON VISIBILITY =====
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // ===== HERO SLIDES (useMemo for stability) =====
   const slides = useMemo(() => [
@@ -220,9 +234,9 @@ function AppContent() {
   // ===== HOMEPAGE PRODUCT SELECTION (avoids showing the same product twice) =====
   // Women/Men/Kids previews use the 2nd–5th product in that category
   // (skipping the 1st, which is already the hero/most prominent item elsewhere).
-  const womenPreview = products.filter(p => p.category === 'Women').slice(5, 9);
-  const menPreview = products.filter(p => p.category === 'Men').slice(5, 9);
-  const kidsPreview = products.filter(p => p.category === 'Kids').slice(5, 9);
+  const womenPreview = products.filter(p => p.category === 'Women').slice(1, 5);
+  const menPreview = products.filter(p => p.category === 'Men').slice(1, 5);
+  const kidsPreview = products.filter(p => p.category === 'Kids').slice(1, 5);
 
   // Track every product ID already shown above so later sections never repeat them.
   const shownIds = new Set([...womenPreview, ...menPreview, ...kidsPreview].map(p => p.id));
@@ -231,7 +245,7 @@ function AppContent() {
   const remainingSorted = sortedProducts.filter(p => !shownIds.has(p.id));
 
   // New Arrivals: the 6th–9th latest products among what's left (not shown above).
-  const newArrivals = remainingSorted.slice(16, 20);
+  const newArrivals = remainingSorted.slice(5, 9);
   const newArrivalIds = new Set(newArrivals.map(p => p.id));
 
   // Best Sellers: no real sales-based ranking exists yet, so we simply show
@@ -665,7 +679,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">✨ New Arrivals</h2>
+              <h2 className="section-title">New Arrivals</h2>
               <div className="product-grid">
                 {newArrivals.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
@@ -676,7 +690,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">🔥 Best Sellers</h2>
+              <h2 className="section-title">Best Sellers</h2>
               <div className="product-grid">
                 {bestSellers.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
@@ -810,6 +824,15 @@ function AppContent() {
           © {new Date().getFullYear()} MariaBeau. All rights reserved.
         </div>
       </footer>
+
+      {/* ===== SCROLL TO TOP BUTTON (every page) ===== */}
+      <button
+        className={`scroll-top-btn ${showScrollTop ? 'visible' : ''}`}
+        onClick={scrollToTop}
+        aria-label="Scroll to top"
+      >
+        <FaArrowUp />
+      </button>
     </div>
   );
 }

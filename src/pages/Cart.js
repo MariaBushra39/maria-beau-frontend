@@ -29,7 +29,7 @@ const getImageUrl = (images) => {
 };
 
 function Cart() {
-  const { cartItems, removeFromCart, getTotalItems, getTotalPrice } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, getTotalItems, getTotalPrice } = useCart();
 
   if (cartItems.length === 0) {
     return (
@@ -72,9 +72,9 @@ function Cart() {
               </div>
               <div className="cart-item-actions">
                 <div className="qty-selector">
-                  <button onClick={() => {/* decrease */}}>-</button>
+                  <button onClick={() => updateQuantity(item.id, item.quantity - 1, item.size, item.color)}>-</button>
                   <span>{item.quantity}</span>
-                  <button onClick={() => {/* increase */}}>+</button>
+                  <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.size, item.color)}>+</button>
                 </div>
                 <span className="cart-item-total">Rs. {(item.discount_price || item.price) * item.quantity}</span>
                 <button 
