@@ -106,7 +106,7 @@ function ProductDetail() {
           </div>
 
           <p className="stock-status">
-            {product.stock > 0 ? '✅ In Stock' : '❌ Out of Stock'}
+            {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
           </p>
 
           <p className="detail-desc">{product.description}</p>
