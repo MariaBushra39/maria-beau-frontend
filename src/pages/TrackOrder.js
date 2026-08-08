@@ -36,7 +36,7 @@ function TrackOrder() {
       const res = await fetch(`${API_URL}/api/orders/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: orderId.trim(), email: email.trim() })
+        body: JSON.stringify({ orderId: orderId.trim().replace(/^#/, ''), email: email.trim() })
       });
       const data = await res.json();
       if (data.success) {
