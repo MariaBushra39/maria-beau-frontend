@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FaMinus, FaPlus } from 'react-icons/fa';
+import { FaMinus, FaPlus, FaStar, FaRegStar } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import './ProductDetail.css';
+import './ProductReviews.css';
 import { useCart } from './context/CartContext';
+import { useAuth } from './context/AuthContext';
 import API_URL from './api';
 
 // ===== SAFE IMAGE URL EXTRACTOR =====
@@ -29,6 +32,24 @@ const getImageUrl = (images) => {
   return 'https://placehold.co/600x800?text=Image+Error';
 };
 
+// Renders 5 stars. If interactive, clicking a star calls onSelect(n).
+const StarRow = ({ rating, interactive = false, onSelect }) => {
+  const rounded = Math.round(rating || 0);
+  return (
+    <span className="star-row">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span
+          key={n}
+          className={`star-icon ${interactive ? 'interactive' : ''}`}
+          onClick={interactive ? () => onSelect(n) : undefined}
+        >
+          {n <= rounded ? <FaStar /> : <FaRegStar />}
+        </span>
+      ))}
+    </span>
+  );
+};
+
 function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -37,6 +58,14 @@ function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { user } = useAuth();
+
+  // ===== REVIEWS STATE =====
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
     fetch(`${API_URL}/api/products/${id}`)
@@ -55,6 +84,61 @@ function ProductDetail() {
       })
       .catch(() => setLoading(false));
   }, [id]);
+
+  // ===== FETCH REVIEWS =====
+  const fetchReviews = () => {
+    setReviewsLoading(true);
+    fetch(`${API_URL}/api/products/${id}/reviews`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setReviews(data.data);
+        setReviewsLoading(false);
+      })
+      .catch(() => setReviewsLoading(false));
+  };
+
+  useEffect(() => {
+    fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (newRating === 0) {
+      toast.error('Please select a star rating');
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/products/${id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ rating: newRating, comment: newComment })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Thank you for your review!');
+        setNewRating(0);
+        setNewComment('');
+        fetchReviews();
+        // Refresh product so the average rating shown near the price updates too.
+        fetch(`${API_URL}/api/products/${id}`)
+          .then(res => res.json())
+          .then(d => { if (d.success) setProduct(d.data); });
+      } else {
+        toast.error(data.message || 'Failed to submit review');
+      }
+    } catch (error) {
+      toast.error('Server error, please try again');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const increaseQty = () => setQuantity(prev => prev + 1);
   const decreaseQty = () => {
@@ -93,6 +177,13 @@ function ProductDetail() {
         {/* RIGHT: DETAILS */}
         <div className="product-detail-right">
           <h1>{product.name}</h1>
+
+          {reviews.length > 0 && (
+            <div className="detail-rating-row">
+              <StarRow rating={product.rating} />
+              <span className="detail-rating-count">({reviews.length} review{reviews.length !== 1 ? 's' : ''})</span>
+            </div>
+          )}
           
           <div className="detail-price-section">
             {product.discount_price ? (
@@ -172,6 +263,56 @@ function ProductDetail() {
             <p><strong>Category:</strong> {product.category}</p>
             <p><strong>SKU:</strong> MB-{product.id?.slice(0, 8)}</p>
           </div>
+        </div>
+      </div>
+
+      {/* ===== REVIEWS SECTION ===== */}
+      <div className="reviews-section">
+        <h2 className="section-title">Customer Reviews</h2>
+
+        {reviewsLoading ? (
+          <p className="empty-msg">Loading reviews...</p>
+        ) : reviews.length === 0 ? (
+          <p className="empty-msg">No reviews yet. Be the first to review this product!</p>
+        ) : (
+          <div className="reviews-list">
+            {reviews.map((review) => (
+              <div key={review.id} className="review-card">
+                <div className="review-card-header">
+                  <span className="review-author">{review.user_name || 'Anonymous'}</span>
+                  <StarRow rating={review.rating} />
+                </div>
+                {review.comment && <p className="review-comment">{review.comment}</p>}
+                <span className="review-date">{new Date(review.created_at).toLocaleDateString()}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* WRITE A REVIEW */}
+        <div className="write-review-block">
+          <h3>Write a Review</h3>
+          {user ? (
+            <form onSubmit={handleSubmitReview} className="review-form">
+              <div className="review-form-stars">
+                <span>Your Rating:</span>
+                <StarRow rating={newRating} interactive onSelect={setNewRating} />
+              </div>
+              <textarea
+                placeholder="Share your experience with this product (optional)"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                rows="4"
+              />
+              <button type="submit" className="review-submit-btn" disabled={submittingReview}>
+                {submittingReview ? 'Submitting...' : 'Submit Review'}
+              </button>
+            </form>
+          ) : (
+            <p className="review-login-prompt">
+              Please <Link to="/login">log in</Link> to write a review.
+            </p>
+          )}
         </div>
       </div>
 

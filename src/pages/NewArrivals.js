@@ -58,6 +58,10 @@ function NewArrivals() {
 
   const handleQuickAdd = (e, product) => {
     e.stopPropagation();
+    if (product.stock === 0) {
+      toast.error('This product is sold out.');
+      return;
+    }
     const defaultSize = Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes[0] : null;
     const defaultColor = Array.isArray(product.colors) && product.colors.length > 0 ? product.colors[0] : null;
     addToCart(product, 1, defaultSize, defaultColor);
@@ -101,7 +105,9 @@ function NewArrivals() {
                     e.target.style.opacity = 1;
                   }}
                 />
-                {product.discount_price ? (
+                {product.stock === 0 ? (
+                  <span className="sale-badge sold-out-badge">SOLD OUT</span>
+                ) : product.discount_price ? (
                   <span className="sale-badge">
                     {Math.round((1 - product.discount_price / product.price) * 100)}% OFF
                   </span>
@@ -109,7 +115,7 @@ function NewArrivals() {
                   <span className="sale-badge new-badge">NEW</span>
                 ) : null}
                 <button
-                  className="quick-add-btn"
+                  className={`quick-add-btn ${product.stock === 0 ? 'disabled' : ''}`}
                   onClick={(e) => handleQuickAdd(e, product)}
                   aria-label={`Add ${product.name} to cart`}
                 >

@@ -642,6 +642,20 @@ body {
   display: block;
   transition: transform 0.4s ease;
 }
+/* Desktop & tablet (multi-column grid): use a consistent frame so rows
+   align evenly, cropping only minimally from the bottom (never the top,
+   so heads are always visible) — this is the standard approach used by
+   fashion brands like Sapphire, Khaadi, Limelight for grid consistency. */
+@media (min-width: 769px) {
+  .product-image-wrapper {
+    aspect-ratio: 3 / 4;
+  }
+  .product-img {
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+}
 .product-image-wrapper:hover .product-img {
   transform: scale(1.05);
 }
@@ -1672,4 +1686,19 @@ body {
     height: 42px;
     font-size: 15px;
   }
+}
+
+/* ================================================================
+   SOLD OUT (product cards)
+   ================================================================ */
+.sold-out-badge {
+  background: #4a4a4a !important;
+}
+.quick-add-btn.disabled {
+  opacity: 0.5;
+}
+.quick-add-btn.disabled:hover {
+  background: #fff;
+  color: #1a1a1a;
+  transform: translateY(8px);
 }

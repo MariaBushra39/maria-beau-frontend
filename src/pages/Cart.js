@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import API_URL from '../api';
 import './Cart.css';
 
@@ -30,6 +31,17 @@ const getImageUrl = (images) => {
 
 function Cart() {
   const { cartItems, removeFromCart, updateQuantity, getTotalItems, getTotalPrice } = useCart();
+
+  // Won't let the customer increase quantity past what's actually in stock
+  // (the stock value is captured on the item when it was added to the cart).
+  const handleIncrease = (item) => {
+    const maxStock = item.stock ?? Infinity;
+    if (item.quantity >= maxStock) {
+      toast.error(`Only ${maxStock} item${maxStock === 1 ? '' : 's'} available in stock.`);
+      return;
+    }
+    updateQuantity(item.id, item.quantity + 1, item.size, item.color);
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -74,7 +86,10 @@ function Cart() {
                 <div className="qty-selector">
                   <button onClick={() => updateQuantity(item.id, item.quantity - 1, item.size, item.color)}>-</button>
                   <span>{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.size, item.color)}>+</button>
+                  <button
+                    onClick={() => handleIncrease(item)}
+                    disabled={item.stock != null && item.quantity >= item.stock}
+                  >+</button>
                 </div>
                 <span className="cart-item-total">Rs. {(item.discount_price || item.price) * item.quantity}</span>
                 <button 
