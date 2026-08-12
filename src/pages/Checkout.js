@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import API_URL from '../api'; // ✅ Added
+import API_URL from '../api';
 import './Checkout.css';
 
 // ===== SAFE IMAGE URL EXTRACTOR =====
@@ -49,7 +49,18 @@ function Checkout() {
     discount: ''
   });
 
+  // ✅ NEW: Separate billing address fields (only used when billingSame is false)
+  const [billingData, setBillingData] = useState({
+    address: '',
+    city: '',
+    country: 'Pakistan'
+  });
+
   const [loading, setLoading] = useState(false);
+
+  // ✅ NEW: Coupon state
+  const [couponStatus, setCouponStatus] = useState('idle'); // idle | checking | applied | invalid
+  const [appliedCoupon, setAppliedCoupon] = useState(null); // { code, type, value }
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -59,12 +70,71 @@ function Checkout() {
     }));
   };
 
+  // ✅ NEW: Billing field change handler
+  const handleBillingChange = (e) => {
+    const { name, value } = e.target;
+    setBillingData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // ✅ NEW: Apply coupon
+  const handleApplyCoupon = async () => {
+    const code = formData.discount.trim();
+    if (!code) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+    setCouponStatus('checking');
+    try {
+      const res = await fetch(`${API_URL}/api/coupons/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAppliedCoupon({ code: code.toUpperCase(), ...data.data });
+        setCouponStatus('applied');
+        toast.success('Coupon applied!');
+      } else {
+        setAppliedCoupon(null);
+        setCouponStatus('invalid');
+        toast.error(data.message || 'Invalid coupon code');
+      }
+    } catch (error) {
+      setAppliedCoupon(null);
+      setCouponStatus('invalid');
+      toast.error('Could not validate coupon. Please try again.');
+    }
+  };
+
+  // ✅ NEW: Remove applied coupon
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponStatus('idle');
+    setFormData(prev => ({ ...prev, discount: '' }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.firstName || !formData.address || !formData.city || !formData.phone) {
-      toast.error('Please fill in all required fields');
+    // ✅ Required fields validation (including Last Name)
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.address || !formData.city || !formData.phone) {
+      toast.error('Please fill in all required fields (including email)');
       return;
+    }
+
+    // ✅ Email format validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // ✅ NEW: Billing address validation (only if different from shipping)
+    if (!formData.billingSame) {
+      if (!billingData.address || !billingData.city) {
+        toast.error('Please fill in your billing address');
+        return;
+      }
     }
 
     if (cartItems.length === 0) {
@@ -72,17 +142,23 @@ function Checkout() {
       return;
     }
 
+    // ✅ Calculate final total including shipping and discount
+    const subtotal = getTotalPrice();
+    const shipping = subtotal >= 3000 ? 0 : 200;
+    const discountAmount = getDiscountAmount();
+    const total = Math.max(subtotal - discountAmount, 0) + shipping;
+
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/orders`, { // ✅ Using API_URL
+      const res = await fetch(`${API_URL}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
-          totalPrice: getTotalPrice(),
+          totalPrice: total, // sent but backend ignores it (recalculates from DB)
           shippingAddress: {
             firstName: formData.firstName,
             lastName: formData.lastName,
@@ -93,7 +169,16 @@ function Checkout() {
             country: formData.country,
             shippingMethod: formData.shippingMethod
           },
+          // ✅ NEW: billing address (only sent when different from shipping)
+          billingAddress: formData.billingSame
+            ? null
+            : {
+                address: billingData.address,
+                city: billingData.city,
+                country: billingData.country
+              },
           paymentMethod: formData.paymentMethod,
+          couponCode: appliedCoupon ? appliedCoupon.code : null, // ✅ NEW
           items: cartItems.map(item => ({
             product_id: item.id,
             quantity: item.quantity,
@@ -104,7 +189,7 @@ function Checkout() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success('Order placed successfully!');
+        toast.success('Order placed successfully! Confirmation email sent.');
         clearCart();
         navigate(`/order-success/${data.data.orderId}`);
       } else {
@@ -119,11 +204,25 @@ function Checkout() {
 
   const subtotal = getTotalPrice();
   const shipping = subtotal >= 3000 ? 0 : 200;
-  const total = subtotal + shipping;
+
+  // ✅ NEW: Compute discount amount from applied coupon
+  function getDiscountAmount() {
+    if (!appliedCoupon) return 0;
+    if (appliedCoupon.type === 'percent') {
+      return (subtotal * appliedCoupon.value) / 100;
+    }
+    if (appliedCoupon.type === 'flat') {
+      return Math.min(appliedCoupon.value, subtotal);
+    }
+    return 0;
+  }
+
+  const discountAmount = getDiscountAmount();
+  const total = Math.max(subtotal - discountAmount, 0) + shipping;
 
   const getButtonText = () => {
     if (loading) return 'Processing...';
-    switch(formData.paymentMethod) {
+    switch (formData.paymentMethod) {
       case 'cash_on_delivery':
         return 'Place Order • COD';
       case 'bank_transfer':
@@ -150,10 +249,23 @@ function Checkout() {
       <div className="checkout-container">
         {/* LEFT: FORM */}
         <div className="checkout-form">
+          {!user && (
+            <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+              <Link to="/login" state={{ from: '/checkout' }} style={{ fontSize: '14px', color: '#1a1a1a' }}>
+                Already have an account? <strong>Login for faster checkout</strong>
+              </Link>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
-            {/* ===== SHIPPING INFORMATION ===== */}
             <div className="form-section">
               <h3>Shipping Information</h3>
+              {!user && (
+                <p className="section-note" style={{ color: '#888', fontSize: '13px', marginBottom: '12px' }}>
+                  🛒 Guest Checkout — No account needed. Enter your details below.
+                </p>
+              )}
+
               <div className="form-row">
                 <div className="form-group">
                   <label>Country/Region <span className="required">*</span></label>
@@ -191,9 +303,25 @@ function Checkout() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
+                    required
                     placeholder="Last name"
                   />
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Email Address <span className="required">*</span></label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="you@example.com"
+                />
+                <small style={{ color: '#888', fontSize: '12px' }}>
+                  We'll send your order confirmation and tracking updates to this email.
+                </small>
               </div>
 
               <div className="form-group">
@@ -234,7 +362,7 @@ function Checkout() {
               </div>
             </div>
 
-            {/* ===== SHIPPING METHOD ===== */}
+            {/* SHIPPING METHOD */}
             <div className="form-section">
               <h3>Shipping Method</h3>
               <div className="shipping-options">
@@ -254,11 +382,10 @@ function Checkout() {
               </div>
             </div>
 
-            {/* ===== PAYMENT ===== */}
+            {/* PAYMENT */}
             <div className="form-section">
               <h3>Payment</h3>
               <p className="section-note">All transactions are secure and encrypted.</p>
-
               <div className="payment-gateways">
                 <label className={`payment-gateway ${formData.paymentMethod === 'cash_on_delivery' ? 'active' : ''}`}>
                   <input
@@ -273,7 +400,6 @@ function Checkout() {
                     <span className="gateway-desc">Pay when you receive your order</span>
                   </div>
                 </label>
-
                 <label className={`payment-gateway ${formData.paymentMethod === 'bank_transfer' ? 'active' : ''}`}>
                   <input
                     type="radio"
@@ -287,7 +413,6 @@ function Checkout() {
                     <span className="gateway-desc">Pay via mobile wallet</span>
                   </div>
                 </label>
-
                 <label className={`payment-gateway ${formData.paymentMethod === 'card' ? 'active' : ''}`}>
                   <input
                     type="radio"
@@ -308,7 +433,7 @@ function Checkout() {
               </div>
             </div>
 
-            {/* ===== BILLING ADDRESS ===== */}
+            {/* BILLING */}
             <div className="form-section">
               <h3>Billing address</h3>
               <label className="billing-toggle">
@@ -320,9 +445,54 @@ function Checkout() {
                 />
                 <span>Same as shipping address</span>
               </label>
+
+              {/* ✅ NEW: Billing address fields (shown only when different from shipping) */}
+              {!formData.billingSame && (
+                <div style={{ marginTop: '12px' }}>
+                  <div className="form-group">
+                    <label>Billing Address <span className="required">*</span></label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={billingData.address}
+                      onChange={handleBillingChange}
+                      required
+                      placeholder="House #123, Street 5, Lahore"
+                    />
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>City <span className="required">*</span></label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={billingData.city}
+                        onChange={handleBillingChange}
+                        required
+                        placeholder="Lahore"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Country</label>
+                      <select
+                        name="country"
+                        value={billingData.country}
+                        onChange={handleBillingChange}
+                        className="form-select"
+                      >
+                        <option value="Pakistan">Pakistan</option>
+                        <option value="India">India</option>
+                        <option value="UAE">UAE</option>
+                        <option value="UK">UK</option>
+                        <option value="USA">USA</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* ===== DISCOUNT ===== */}
+            {/* DISCOUNT */}
             <div className="form-section discount-section">
               <div className="discount-toggle">
                 <span>Add discount</span>
@@ -335,9 +505,29 @@ function Checkout() {
                   value={formData.discount}
                   onChange={handleChange}
                   placeholder="Enter coupon code"
+                  disabled={couponStatus === 'applied'}
                 />
-                <button type="button" className="apply-btn">Apply</button>
+                {/* ✅ NEW: Apply / Remove coupon logic wired up */}
+                {couponStatus === 'applied' ? (
+                  <button type="button" className="apply-btn" onClick={handleRemoveCoupon}>
+                    Remove
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="apply-btn"
+                    onClick={handleApplyCoupon}
+                    disabled={couponStatus === 'checking'}
+                  >
+                    {couponStatus === 'checking' ? 'Checking...' : 'Apply'}
+                  </button>
+                )}
               </div>
+              {couponStatus === 'applied' && appliedCoupon && (
+                <p style={{ color: '#1a7a4c', fontSize: '13px', marginTop: '6px' }}>
+                  ✓ "{appliedCoupon.code}" applied
+                </p>
+              )}
             </div>
 
             <button type="submit" className="pay-now-btn" disabled={loading}>
@@ -357,9 +547,9 @@ function Checkout() {
             {cartItems.map((item, idx) => (
               <div key={`${item.id}-${idx}`} className="summary-item">
                 <div className="summary-item-image">
-                  <img 
-                    src={getImageUrl(item.images)} 
-                    alt={item.name} 
+                  <img
+                    src={getImageUrl(item.images)}
+                    alt={item.name}
                     onError={(e) => {
                       e.target.src = 'https://placehold.co/60x60?text=Image+Error';
                     }}
@@ -377,6 +567,21 @@ function Checkout() {
           </div>
 
           <div className="summary-totals">
+            <div className="summary-row">
+              <span>Subtotal</span>
+              <span>Rs. {subtotal.toFixed(2)}</span>
+            </div>
+            {/* ✅ NEW: Discount line, only shown when a coupon is applied */}
+            {appliedCoupon && (
+              <div className="summary-row">
+                <span>Discount ({appliedCoupon.code})</span>
+                <span>- Rs. {discountAmount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="summary-row">
+              <span>Shipping</span>
+              <span>{shipping === 0 ? 'FREE' : `Rs. ${shipping}`}</span>
+            </div>
             <div className="summary-row">
               <span>Total</span>
               <span className="summary-total-price">Rs. {total.toFixed(2)}</span>
