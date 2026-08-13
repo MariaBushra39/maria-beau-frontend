@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProductDetail from './ProductDetail';
 import './App.css';
 import { 
-  FaSearch, FaRegHeart, FaHeart, FaShoppingCart, FaUser, 
+  FaSearch, FaRegHeart, FaHeart, FaShoppingBag, FaUser, 
   FaTruck, FaLock, FaUndo, FaGem, 
   FaInstagram, FaFacebook, FaTwitter, FaPinterest,
   FaChevronLeft, FaChevronRight, FaTimes, FaSignOutAlt, FaArrowUp
@@ -208,6 +208,10 @@ function AppContent() {
   // later from the Cart page if needed).
   const handleQuickAdd = (e, product) => {
     e.stopPropagation(); // don't trigger the card click (navigate to product page)
+    if (product.stock === 0) {
+      toast.error('This product is sold out.');
+      return;
+    }
     const defaultSize = Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes[0] : null;
     const defaultColor = Array.isArray(product.colors) && product.colors.length > 0 ? product.colors[0] : null;
     addToCart(product, 1, defaultSize, defaultColor);
@@ -358,7 +362,9 @@ function AppContent() {
               e.target.style.opacity = 1;
             }}
           />
-          {product.discount_price ? (
+          {product.stock === 0 ? (
+            <span className="sale-badge sold-out-badge">SOLD OUT</span>
+          ) : product.discount_price ? (
             <span className="sale-badge">
               {Math.round((1 - product.discount_price / product.price) * 100)}% OFF
             </span>
@@ -366,11 +372,11 @@ function AppContent() {
             <span className="sale-badge new-badge">NEW</span>
           ) : null}
           <button
-            className="quick-add-btn"
+            className={`quick-add-btn ${product.stock === 0 ? 'disabled' : ''}`}
             onClick={(e) => handleQuickAdd(e, product)}
             aria-label={`Add ${product.name} to cart`}
           >
-            <FaShoppingCart />
+            <FaShoppingBag />
           </button>
           <button
             className={`wishlist-toggle-btn ${isInWishlist(product.id) ? 'active' : ''}`}
@@ -422,7 +428,7 @@ function AppContent() {
               )}
             </Link>
             <Link to="/cart" className="icon cart-icon" style={{ position: 'relative', color: '#fff' }}>
-              <FaShoppingCart />
+              <FaShoppingBag />
               {getTotalItems() > 0 && (
                 <span className="cart-badge">{getTotalItems()}</span>
               )}
@@ -679,7 +685,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">New Arrivals</h2>
+              <h2 className="section-title">✨ New Arrivals</h2>
               <div className="product-grid">
                 {newArrivals.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
@@ -690,7 +696,7 @@ function AppContent() {
             </section>
 
             <section className="products-section">
-              <h2 className="section-title">Best Sellers</h2>
+              <h2 className="section-title">🔥 Best Sellers</h2>
               <div className="product-grid">
                 {bestSellers.length === 0 ? (
                   <p className="empty-msg">No products yet.</p>
