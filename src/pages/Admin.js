@@ -17,6 +17,14 @@ const getImageSrc = (filename) => {
   return `${API_URL}/uploads/${filename}`;
 };
 
+// ✅ NEW: safely extract a thumbnail URL from an order item's images array
+const getItemThumb = (images) => {
+  if (!images || !Array.isArray(images) || images.length === 0) return null;
+  const img = images[0];
+  if (typeof img === 'string') return getImageSrc(img);
+  return null;
+};
+
 function Admin() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
@@ -291,7 +299,12 @@ function Admin() {
                               {order.status}
                             </span>
                           </td>
-                          <td>{new Date(order.created_at).toLocaleDateString()}</td>
+                          <td>
+                            {new Date(order.created_at).toLocaleDateString()}
+                            <div style={{ fontSize: '12px', color: '#888' }}>
+                              {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </td>
                           <td onClick={(e) => e.stopPropagation()}>
                             <select
                               value={order.status}
@@ -318,22 +331,47 @@ function Admin() {
                                   <thead>
                                     <tr>
                                       <th style={{ textAlign: 'left', fontSize: '12px', color: '#888', paddingBottom: '8px' }}>Product</th>
-                                      <th style={{ textAlign: 'center', fontSize: '12px', color: '#888', paddingBottom: '8px' }}>Qty</th>
+                                      <th style={{ textAlign: 'center', fontSize: '12px', color: '#888', paddingBottom: '8px' }}>Qty / Category</th>
                                       <th style={{ textAlign: 'right', fontSize: '12px', color: '#888', paddingBottom: '8px' }}>Price</th>
                                       <th style={{ textAlign: 'right', fontSize: '12px', color: '#888', paddingBottom: '8px' }}>Subtotal</th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {order.items.map((item, idx) => (
-                                      <tr key={idx} style={{ borderTop: '1px solid #e8dcc4' }}>
-                                        <td style={{ padding: '8px 0', fontSize: '14px' }}>{item.name}</td>
-                                        <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'center' }}>{item.quantity}</td>
-                                        <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'right' }}>Rs. {item.price}</td>
-                                        <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'right', fontWeight: 600 }}>
-                                          Rs. {(item.price * item.quantity).toFixed(2)}
-                                        </td>
-                                      </tr>
-                                    ))}
+                                    {order.items.map((item, idx) => {
+                                      const thumb = getItemThumb(item.images);
+                                      return (
+                                        <tr key={idx} style={{ borderTop: '1px solid #e8dcc4' }}>
+                                          <td style={{ padding: '8px 0', fontSize: '14px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                              {thumb ? (
+                                                <img
+                                                  src={thumb}
+                                                  alt={item.name}
+                                                  style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e8dcc4' }}
+                                                />
+                                              ) : (
+                                                <div style={{ width: '36px', height: '36px', borderRadius: '4px', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>
+                                                  <FaImage size={14} />
+                                                </div>
+                                              )}
+                                              <span>{item.name}</span>
+                                            </div>
+                                          </td>
+                                          <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'center' }}>
+                                            <div>{item.quantity}</div>
+                                            {(item.category || item.subcategory) && (
+                                              <div style={{ fontSize: '11px', color: '#B5762E', marginTop: '2px' }}>
+                                                {[item.category, item.subcategory].filter(Boolean).join(' • ')}
+                                              </div>
+                                            )}
+                                          </td>
+                                          <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'right' }}>Rs. {item.price}</td>
+                                          <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'right', fontWeight: 600 }}>
+                                            Rs. {(item.price * item.quantity).toFixed(2)}
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
                                   </tbody>
                                 </table>
                               )}
