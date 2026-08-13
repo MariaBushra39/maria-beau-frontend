@@ -250,9 +250,26 @@ function Checkout() {
         {/* LEFT: FORM */}
         <div className="checkout-form">
           {!user && (
-            <div style={{ textAlign: 'right', marginBottom: '10px' }}>
-              <Link to="/login" state={{ from: '/checkout' }} style={{ fontSize: '14px', color: '#1a1a1a' }}>
-                Already have an account? <strong>Login for faster checkout</strong>
+            <div
+              style={{
+                textAlign: 'left',
+                marginBottom: '20px',
+                padding: '12px 16px',
+                background: '#faf7f2',
+                border: '1px solid #e8dcc4',
+                borderRadius: '6px',
+                fontSize: '14px',
+                color: '#555',
+                lineHeight: '1.5'
+              }}
+            >
+              Already have an account?{' '}
+              <Link
+                to="/login"
+                state={{ from: '/checkout' }}
+                style={{ color: '#B5762E', fontWeight: 600, textDecoration: 'underline' }}
+              >
+                Login for faster checkout
               </Link>
             </div>
           )}
