@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import API_URL from '../api';
 import {
   FaBoxOpen, FaClipboardList, FaPlus, FaSearch,
-  FaEdit, FaTrash, FaImage
+  FaEdit, FaTrash, FaImage, FaChevronDown, FaChevronUp
 } from 'react-icons/fa';
 import './Admin.css';
 
@@ -24,6 +24,7 @@ function Admin() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('products');
   const [searchTerm, setSearchTerm] = useState('');
+  const [expandedOrderId, setExpandedOrderId] = useState(null); // ✅ NEW
 
   // ===== FETCH PRODUCTS =====
   const fetchProducts = async () => {
@@ -103,6 +104,11 @@ function Admin() {
     } catch (error) {
       toast.error('Server error');
     }
+  };
+
+  // ✅ NEW: expand/collapse an order row to show its products
+  const toggleOrderExpand = (orderId) => {
+    setExpandedOrderId(prev => (prev === orderId ? null : orderId));
   };
 
   const filteredProducts = products.filter(p =>
@@ -239,6 +245,7 @@ function Admin() {
             <table>
               <thead>
                 <tr>
+                  <th></th>
                   <th>Order ID</th>
                   <th>Customer</th>
                   <th>Total</th>
@@ -250,7 +257,7 @@ function Admin() {
               <tbody>
                 {orders.length === 0 ? (
                   <tr>
-                    <td colSpan="6">
+                    <td colSpan="7">
                       <div className="empty-state">
                         <FaClipboardList size={28} />
                         <p>No orders yet.</p>
@@ -258,33 +265,84 @@ function Admin() {
                     </td>
                   </tr>
                 ) : (
-                  orders.map(order => (
-                    <tr key={order.id}>
-                      <td className="order-id-cell">#{order.id?.slice(0, 8)}</td>
-                      <td>{order.user_name || 'Guest'}</td>
-                      <td className="price-cell">Rs. {order.total_price}</td>
-                      <td>
-                        <span className={`status-badge ${order.status}`}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td>{new Date(order.created_at).toLocaleDateString()}</td>
-                      <td>
-                        <select
-                          value={order.status}
-                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                          className="status-select"
+                  orders.map(order => {
+                    const isExpanded = expandedOrderId === order.id;
+                    const itemCount = Array.isArray(order.items) ? order.items.length : 0;
+                    return (
+                      <React.Fragment key={order.id}>
+                        <tr
+                          onClick={() => toggleOrderExpand(order.id)}
+                          style={{ cursor: 'pointer' }}
                         >
-                          <option value="pending">Pending</option>
-                          <option value="confirmed">Confirmed</option>
-                          <option value="processing">Processing</option>
-                          <option value="shipped">Shipped</option>
-                          <option value="delivered">Delivered</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
-                      </td>
-                    </tr>
-                  ))
+                          <td style={{ color: '#B5762E', textAlign: 'center' }}>
+                            {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+                          </td>
+                          <td className="order-id-cell">#{order.id?.slice(0, 8)}</td>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{order.user_name || 'Guest'}</div>
+                            {/* ✅ NEW: customer email shown under their name */}
+                            {order.user_email && (
+                              <div style={{ fontSize: '12px', color: '#888' }}>{order.user_email}</div>
+                            )}
+                          </td>
+                          <td className="price-cell">Rs. {order.total_price}</td>
+                          <td>
+                            <span className={`status-badge ${order.status}`}>
+                              {order.status}
+                            </span>
+                          </td>
+                          <td>{new Date(order.created_at).toLocaleDateString()}</td>
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <select
+                              value={order.status}
+                              onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                              className="status-select"
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="confirmed">Confirmed</option>
+                              <option value="processing">Processing</option>
+                              <option value="shipped">Shipped</option>
+                              <option value="delivered">Delivered</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          </td>
+                        </tr>
+                        {/* ✅ NEW: expanded row — list of products ordered */}
+                        {isExpanded && (
+                          <tr>
+                            <td colSpan="7" style={{ background: '#faf7f2', padding: '16px 20px' }}>
+                              {itemCount === 0 ? (
+                                <p style={{ margin: 0, color: '#888', fontSize: '13px' }}>No product details available.</p>
+                              ) : (
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                  <thead>
+                                    <tr>
+                                      <th style={{ textAlign: 'left', fontSize: '12px', color: '#888', paddingBottom: '8px' }}>Product</th>
+                                      <th style={{ textAlign: 'center', fontSize: '12px', color: '#888', paddingBottom: '8px' }}>Qty</th>
+                                      <th style={{ textAlign: 'right', fontSize: '12px', color: '#888', paddingBottom: '8px' }}>Price</th>
+                                      <th style={{ textAlign: 'right', fontSize: '12px', color: '#888', paddingBottom: '8px' }}>Subtotal</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {order.items.map((item, idx) => (
+                                      <tr key={idx} style={{ borderTop: '1px solid #e8dcc4' }}>
+                                        <td style={{ padding: '8px 0', fontSize: '14px' }}>{item.name}</td>
+                                        <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'center' }}>{item.quantity}</td>
+                                        <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'right' }}>Rs. {item.price}</td>
+                                        <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'right', fontWeight: 600 }}>
+                                          Rs. {(item.price * item.quantity).toFixed(2)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })
                 )}
               </tbody>
             </table>
