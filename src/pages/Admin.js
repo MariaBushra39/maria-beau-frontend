@@ -32,6 +32,8 @@ function Admin() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('products');
   const [searchTerm, setSearchTerm] = useState('');
+  const [orderSearchTerm, setOrderSearchTerm] = useState(''); // ✅ NEW
+  const [orderStatusFilter, setOrderStatusFilter] = useState('all'); // ✅ NEW
   const [expandedOrderId, setExpandedOrderId] = useState(null); // ✅ NEW
 
   // ===== FETCH PRODUCTS =====
@@ -126,6 +128,22 @@ function Admin() {
 
   const pendingOrders = orders.filter(o => o.status === 'pending').length;
 
+  // ✅ NEW: total revenue — cancelled orders excluded since they never completed
+  const totalRevenue = orders
+    .filter(o => o.status !== 'cancelled')
+    .reduce((sum, o) => sum + Number(o.total_price || 0), 0);
+
+  // ✅ NEW: filter orders by search term (order ID / customer name / email) and status
+  const filteredOrders = orders.filter(order => {
+    const matchesStatus = orderStatusFilter === 'all' || order.status === orderStatusFilter;
+    const term = orderSearchTerm.trim().toLowerCase();
+    const matchesSearch = !term ||
+      order.id?.toLowerCase().includes(term) ||
+      order.user_name?.toLowerCase().includes(term) ||
+      order.user_email?.toLowerCase().includes(term);
+    return matchesStatus && matchesSearch;
+  });
+
   if (loading) return <div className="loading">⏳ LOADING ...</div>;
 
   return (
@@ -157,6 +175,14 @@ function Admin() {
           <div>
             <h3>{pendingOrders}</h3>
             <p>Pending Orders</p>
+          </div>
+        </div>
+        {/* ✅ NEW: total revenue card (cancelled orders excluded) */}
+        <div className="stat-card">
+          <span className="stat-icon orders-icon">Rs.</span>
+          <div>
+            <h3>Rs. {totalRevenue.toLocaleString()}</h3>
+            <p>Total Revenue</p>
           </div>
         </div>
       </div>
@@ -249,6 +275,33 @@ function Admin() {
       {/* ===== ORDERS TAB ===== */}
       {activeTab === 'orders' && (
         <div className="admin-orders">
+          {/* ✅ NEW: order search + status filter toolbar */}
+          <div className="admin-toolbar">
+            <div className="admin-search">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search by Order ID, customer name, or email..."
+                value={orderSearchTerm}
+                onChange={(e) => setOrderSearchTerm(e.target.value)}
+              />
+            </div>
+            <select
+              value={orderStatusFilter}
+              onChange={(e) => setOrderStatusFilter(e.target.value)}
+              className="status-select"
+              style={{ minWidth: '160px' }}
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
           <div className="order-table">
             <table>
               <thead>
@@ -263,17 +316,17 @@ function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {orders.length === 0 ? (
+                {filteredOrders.length === 0 ? (
                   <tr>
                     <td colSpan="7">
                       <div className="empty-state">
                         <FaClipboardList size={28} />
-                        <p>No orders yet.</p>
+                        <p>{orders.length === 0 ? 'No orders yet.' : 'No orders match your search/filter.'}</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  orders.map(order => {
+                  filteredOrders.map(order => {
                     const isExpanded = expandedOrderId === order.id;
                     const itemCount = Array.isArray(order.items) ? order.items.length : 0;
                     return (

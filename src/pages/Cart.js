@@ -46,7 +46,7 @@ function Cart() {
   if (cartItems.length === 0) {
     return (
       <div className="cart-empty">
-        <h2>🛒 Your Cart is Empty</h2>
+        <h2>Your Cart is Empty</h2>
         <Link to="/">Continue Shopping →</Link>
       </div>
     );
