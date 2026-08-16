@@ -42,9 +42,8 @@ function WelcomePopup() {
 
   return (
     <>
-      {/* Google Font (Playfair Display) — elegant serif */}
       <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&display=swap"
         rel="stylesheet"
       />
 
@@ -77,6 +76,13 @@ function WelcomePopup() {
             opacity: 1;
             transform: translateY(0) scale(1);
           }
+        }
+
+        /* ANIMATION FOR 10% OFF */
+        @keyframes discountPop {
+          0% { transform: scale(1) translateY(0); }
+          50% { transform: scale(1.15) translateY(-4px); }
+          100% { transform: scale(1) translateY(0); }
         }
 
         .mb-welcome-card {
@@ -112,7 +118,7 @@ function WelcomePopup() {
           height: 100%;
           display: block;
           object-fit: cover;
-          object-position: center center;
+          object-position: center 15%;  /* ✅ Face + clothes both visible */
         }
 
         .mb-welcome-close {
@@ -166,11 +172,11 @@ function WelcomePopup() {
 
         .mb-welcome-eyebrow {
           margin: 0 0 20px;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 2.8px;
+          font-size: 12px;
+          font-weight: 800;          /* ✅ Bold & prominent */
+          letter-spacing: 3px;
           text-transform: uppercase;
-          color: #888;
+          color: #1a1a1a;
         }
 
         .mb-welcome-eyebrow .brand-teal { color: #2f8f80; }
@@ -178,7 +184,7 @@ function WelcomePopup() {
 
         .mb-welcome-title {
           margin: 0;
-          font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+          font-family: 'Playfair Display', Georgia, serif;
           font-size: 33px;
           font-weight: 700;
           line-height: 1.2;
@@ -186,8 +192,11 @@ function WelcomePopup() {
           color: #181818;
         }
 
+        /* ✅ RED + ANIMATED "10% Off" */
         .mb-welcome-highlight {
-          color: #b5762e;
+          color: #c0392b;
+          display: inline-block;
+          animation: discountPop 1.6s infinite ease-in-out;
         }
 
         .mb-welcome-subtitle {
@@ -196,7 +205,7 @@ function WelcomePopup() {
           font-size: 13px;
           line-height: 1.7;
           letter-spacing: 0.2px;
-          color: #777;
+          color: #555;  /* slightly darker for readability */
         }
 
         .mb-welcome-code {
@@ -284,7 +293,9 @@ function WelcomePopup() {
             min-height: 155px;
             flex: none;
           }
-          .mb-welcome-image-wrap img { object-position: center 30%; }
+          .mb-welcome-image-wrap img {
+            object-position: center 20%;  /* better for mobile */
+          }
           .mb-welcome-close {
             top: 10px;
             right: 10px;
@@ -296,8 +307,8 @@ function WelcomePopup() {
           .mb-welcome-content::before { left: 30px; right: 30px; }
           .mb-welcome-eyebrow {
             margin-bottom: 13px;
-            font-size: 9px;
-            letter-spacing: 2.2px;
+            font-size: 10px;
+            letter-spacing: 2.5px;
           }
           .mb-welcome-title {
             font-size: 25px;
@@ -330,6 +341,9 @@ function WelcomePopup() {
             height: 135px;
             min-height: 135px;
           }
+          .mb-welcome-image-wrap img {
+            object-position: center 25%;
+          }
           .mb-welcome-content { padding: 23px 17px 24px; }
           .mb-welcome-title { font-size: 21px; }
           .mb-welcome-subtitle {
@@ -347,6 +361,7 @@ function WelcomePopup() {
         @media (prefers-reduced-motion: reduce) {
           .mb-welcome-overlay,
           .mb-welcome-card { animation: none; }
+          .mb-welcome-highlight { animation: none; }
           .mb-welcome-close,
           .mb-welcome-code,
           .mb-welcome-btn { transition: none; }
@@ -370,8 +385,8 @@ function WelcomePopup() {
 
           <div className="mb-welcome-content">
             <div className="mb-welcome-eyebrow">
-              Welcome to <span className="brand-teal">Maria</span>
-              <span className="brand-gold">Beau</span>
+              Welcome to <span className="brand-teal">MARIA</span>
+              <span className="brand-gold">BEAU</span>
             </div>
 
             <h2 className="mb-welcome-title">
@@ -381,7 +396,7 @@ function WelcomePopup() {
             </h2>
 
             <p className="mb-welcome-subtitle">
-              Sign up &amp; enjoy 10% off your first purchase.
+              A special welcome gift – just for you. Use the code below at checkout to receive 10% off your first order.
             </p>
 
             <div
@@ -395,7 +410,7 @@ function WelcomePopup() {
               aria-label="Copy coupon code MAR39"
             >
               <span className="mb-welcome-code-text">MAR39</span>
-              <span className="mb-welcome-code-hint">tap to copy</span>
+              <span className="mb-welcome-code-hint">Tap to copy</span>
             </div>
 
             <button type="button" className="mb-welcome-btn" onClick={handleShopNow}>
