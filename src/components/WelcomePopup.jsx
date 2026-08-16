@@ -2,22 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-// ✅ Replace this file to change the popup image — nothing else needs to change.
+// 🔁 Replace only this image
 import welcomeImage from '../assets/welcome-popup.jpg';
 
-// Shown once per visit (browser tab/session) — closing it or clicking "Shop Now"
-// hides it for the rest of this visit, but it will show again on the next visit.
 const STORAGE_KEY = 'mariabeau_welcome_popup_shown';
-const SHOW_DELAY_MS = 4500; // ~4-5 seconds after the visitor lands
+const SHOW_DELAY_MS = 4500;
 
 function WelcomePopup() {
   const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Already shown this visit — don't show again until a new tab/session.
     if (sessionStorage.getItem(STORAGE_KEY)) return;
-
     const timer = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
     return () => clearTimeout(timer);
   }, []);
@@ -32,12 +28,13 @@ function WelcomePopup() {
     navigate('/');
   };
 
-  const handleCopyCode = (e) => {
+  const handleCopyCode = async (e) => {
     e.stopPropagation();
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText('MAR39').then(() => {
-        toast.success('Code copied: MAR39');
-      }).catch(() => {});
+    try {
+      await navigator.clipboard.writeText('MAR39');
+      toast.success('Code copied: MAR39');
+    } catch {
+      toast.error('Unable to copy code');
     }
   };
 
@@ -45,214 +42,363 @@ function WelcomePopup() {
 
   return (
     <>
-      {/* Scoped styles for the popup — media queries need a <style> tag since inline styles can't do them */}
+      {/* Google Font (Playfair Display) — elegant serif */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet"
+      />
+
       <style>{`
         .mb-welcome-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(26, 26, 26, 0.55);
           z-index: 9999;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 20px;
-          animation: mbWelcomeFadeIn 0.3s ease;
+          padding: 24px;
+          background: rgba(20, 20, 20, 0.62);
+          backdrop-filter: blur(3px);
+          -webkit-backdrop-filter: blur(3px);
+          animation: mbFadeIn 0.3s ease;
         }
-        @keyframes mbWelcomeFadeIn {
+
+        @keyframes mbFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        @keyframes mbWelcomeSlideUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
+
+        @keyframes mbCardIn {
+          from {
+            opacity: 0;
+            transform: translateY(18px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
         }
+
         .mb-welcome-card {
-          background: #ffffff;
-          border-radius: 8px;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.22);
-          max-width: 560px;
-          width: 100%;
-          display: flex;
-          overflow: hidden;
           position: relative;
-          animation: mbWelcomeSlideUp 0.35s ease;
+          width: min(760px, 92vw);
+          min-height: 420px;
+          display: grid;
+          grid-template-columns: 44% 56%;
+          overflow: hidden;
+          background: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0 25px 70px rgba(0,0,0,0.30), 0 4px 16px rgba(0,0,0,0.08);
+          animation: mbCardIn 0.4s ease;
         }
+
         .mb-welcome-image-wrap {
-          flex: 0 0 40%;
+          position: relative;
+          min-height: 420px;
+          overflow: hidden;
+          background: #eee;
         }
+
+        .mb-welcome-image-wrap::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to top, rgba(0,0,0,0.14), transparent 35%);
+          pointer-events: none;
+        }
+
         .mb-welcome-image-wrap img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
-          object-position: center 20%;
           display: block;
+          object-fit: cover;
+          object-position: center center;
         }
-        .mb-welcome-content {
-          flex: 0 0 60%;
-          padding: 32px 30px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          text-align: center;
-        }
+
         .mb-welcome-close {
           position: absolute;
-          top: 10px;
-          right: 12px;
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
-          background: transparent;
-          border: none;
+          top: 14px;
+          right: 14px;
+          z-index: 5;
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
-          cursor: pointer;
-          font-size: 18px;
+          border: 1px solid rgba(0,0,0,0.10);
+          border-radius: 50%;
+          background: rgba(255,255,255,0.92);
+          color: #222;
+          font-size: 20px;
+          font-weight: 300;
           line-height: 1;
-          color: #999;
-          z-index: 2;
-          transition: color 0.2s ease, background 0.2s ease;
+          cursor: pointer;
+          transition: background 0.2s, transform 0.2s, color 0.2s;
         }
+
         .mb-welcome-close:hover {
-          color: #c0392b;
-          background: #faf7f2;
+          background: #1a1a1a;
+          color: #fff;
+          transform: rotate(90deg);
         }
+
+        .mb-welcome-content {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 48px 50px 44px;
+          text-align: center;
+          background: #ffffff;
+        }
+
+        .mb-welcome-content::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 48px;
+          right: 48px;
+          height: 1px;
+          background: #d6b36a;
+          opacity: 0.55;
+        }
+
         .mb-welcome-eyebrow {
+          margin: 0 0 20px;
           font-size: 11px;
-          letter-spacing: 1.8px;
-          color: #888;
           font-weight: 700;
-          margin-bottom: 10px;
+          letter-spacing: 2.8px;
           text-transform: uppercase;
+          color: #888;
         }
-        .mb-welcome-eyebrow .brand-teal {
-          color: #2FA88E;
-        }
-        .mb-welcome-eyebrow .brand-gold {
-          color: #B5762E;
-        }
-        .mb-welcome-highlight {
-          color: #c0392b;
-          display: inline-block;
-          animation: mbWelcomePop 0.5s ease 0.6s both;
-        }
-        @keyframes mbWelcomePop {
-          0% { transform: scale(0.7); opacity: 0; }
-          60% { transform: scale(1.12); opacity: 1; }
-          100% { transform: scale(1); opacity: 1; }
-        }
+
+        .mb-welcome-eyebrow .brand-teal { color: #2f8f80; }
+        .mb-welcome-eyebrow .brand-gold { color: #b5762e; }
+
         .mb-welcome-title {
-          font-family: Georgia, 'Times New Roman', serif;
-          font-size: 21px;
-          color: #1a1a1a;
-          margin: 0 0 10px 0;
-          line-height: 1.3;
+          margin: 0;
+          font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+          font-size: 33px;
+          font-weight: 700;
+          line-height: 1.2;
+          letter-spacing: -0.3px;
+          color: #181818;
         }
+
+        .mb-welcome-highlight {
+          color: #b5762e;
+        }
+
         .mb-welcome-subtitle {
+          max-width: 350px;
+          margin: 20px 0 26px;
           font-size: 13px;
+          line-height: 1.7;
+          letter-spacing: 0.2px;
           color: #777;
-          line-height: 1.5;
-          margin: 0 0 18px 0;
         }
+
         .mb-welcome-code {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
-          background: #faf7f2;
-          border: 1px dashed #B5762E;
+          gap: 10px;
+          min-width: 190px;
+          margin-bottom: 26px;
+          padding: 11px 18px;
+          border: 1px dashed #b89052;
           border-radius: 5px;
-          padding: 9px 16px;
-          margin: 0 auto 18px auto;
+          background: #fcfaf6;
           cursor: pointer;
+          transition: background 0.2s, border-color 0.2s, transform 0.2s;
         }
+
+        .mb-welcome-code:hover {
+          background: #f8f1e5;
+          border-color: #9e7539;
+          transform: translateY(-1px);
+        }
+
         .mb-welcome-code-text {
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 700;
-          letter-spacing: 1.2px;
-          color: #1a1a1a;
+          letter-spacing: 1.8px;
+          color: #1b1b1b;
         }
+
         .mb-welcome-code-hint {
           font-size: 10px;
-          color: #aaa;
+          color: #999;
+          letter-spacing: 0.2px;
         }
+
         .mb-welcome-btn {
+          min-width: 175px;
+          padding: 13px 28px;
+          border: 1px solid #1a1a1a;
+          border-radius: 3px;
           background: #1a1a1a;
           color: #ffffff;
-          border: 1px solid #1a1a1a;
-          padding: 11px 30px;
-          font-size: 12px;
-          letter-spacing: 1.2px;
-          font-weight: 600;
-          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 1.8px;
+          text-transform: uppercase;
           cursor: pointer;
-          align-self: center;
-          transition: background 0.2s ease, color 0.2s ease;
+          transition: background 0.25s, color 0.25s, transform 0.2s;
         }
+
         .mb-welcome-btn:hover {
           background: #ffffff;
           color: #1a1a1a;
+          transform: translateY(-1px);
         }
 
-        @media (max-width: 620px) {
+        /* TABLET */
+        @media (max-width: 700px) {
+          .mb-welcome-overlay { padding: 18px; }
           .mb-welcome-card {
+            width: min(560px, 92vw);
+            min-height: auto;
+            grid-template-columns: 42% 58%;
+          }
+          .mb-welcome-image-wrap { min-height: 390px; }
+          .mb-welcome-content { padding: 38px 28px 34px; }
+          .mb-welcome-content::before { left: 28px; right: 28px; }
+          .mb-welcome-title { font-size: 27px; }
+          .mb-welcome-subtitle { font-size: 12px; }
+        }
+
+        /* MOBILE */
+        @media (max-width: 560px) {
+          .mb-welcome-overlay { padding: 16px; }
+          .mb-welcome-card {
+            width: min(360px, 92vw);
+            display: flex;
             flex-direction: column;
-            max-width: 340px;
+            border-radius: 12px;
           }
           .mb-welcome-image-wrap {
-            flex: none;
             width: 100%;
-            height: 170px;
-          }
-          .mb-welcome-content {
+            height: 155px;
+            min-height: 155px;
             flex: none;
-            padding: 22px 20px 24px 20px;
           }
-          .mb-welcome-title {
+          .mb-welcome-image-wrap img { object-position: center 30%; }
+          .mb-welcome-close {
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
             font-size: 18px;
           }
-        }
-        @media (max-width: 360px) {
-          .mb-welcome-image-wrap {
-            height: 150px;
-          }
-          .mb-welcome-content {
-            padding: 18px 16px 20px 16px;
+          .mb-welcome-content { padding: 27px 22px 28px; }
+          .mb-welcome-content::before { left: 30px; right: 30px; }
+          .mb-welcome-eyebrow {
+            margin-bottom: 13px;
+            font-size: 9px;
+            letter-spacing: 2.2px;
           }
           .mb-welcome-title {
-            font-size: 17px;
+            font-size: 25px;
+            line-height: 1.22;
           }
+          .mb-welcome-subtitle {
+            max-width: 290px;
+            margin: 14px 0 19px;
+            font-size: 12px;
+            line-height: 1.55;
+          }
+          .mb-welcome-code {
+            min-width: 180px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+          }
+          .mb-welcome-code-text { font-size: 14px; }
+          .mb-welcome-code-hint { font-size: 9px; }
+          .mb-welcome-btn {
+            min-width: 160px;
+            padding: 12px 24px;
+            font-size: 10px;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .mb-welcome-overlay { padding: 12px; }
+          .mb-welcome-card { width: 94vw; }
+          .mb-welcome-image-wrap {
+            height: 135px;
+            min-height: 135px;
+          }
+          .mb-welcome-content { padding: 23px 17px 24px; }
+          .mb-welcome-title { font-size: 21px; }
+          .mb-welcome-subtitle {
+            font-size: 11px;
+            margin-top: 12px;
+            margin-bottom: 17px;
+          }
+          .mb-welcome-code {
+            min-width: 165px;
+            margin-bottom: 17px;
+          }
+          .mb-welcome-btn { min-width: 150px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .mb-welcome-overlay,
+          .mb-welcome-card { animation: none; }
+          .mb-welcome-close,
+          .mb-welcome-code,
+          .mb-welcome-btn { transition: none; }
         }
       `}</style>
 
-      <div className="mb-welcome-overlay" onClick={dismiss}>
+      <div className="mb-welcome-overlay" onClick={dismiss} role="presentation">
         <div className="mb-welcome-card" onClick={(e) => e.stopPropagation()}>
-          <button className="mb-welcome-close" onClick={dismiss} aria-label="Close welcome offer">
+          <button
+            type="button"
+            className="mb-welcome-close"
+            onClick={dismiss}
+            aria-label="Close welcome offer"
+          >
             ×
           </button>
 
           <div className="mb-welcome-image-wrap">
-            <img src={welcomeImage} alt="MariaBeau" />
+            <img src={welcomeImage} alt="MariaBeau fashion collection" />
           </div>
 
           <div className="mb-welcome-content">
-            <span className="mb-welcome-eyebrow">
-              Welcome to <span className="brand-teal">MARIA</span><span className="brand-gold">BEAU</span>
-            </span>
-            <h2 className="mb-welcome-title">
-              Enjoy <span className="mb-welcome-highlight">10% Off</span><br />Your First Order
-            </h2>
-            <p className="mb-welcome-subtitle">
-              As a thank you for visiting, treat yourself to something beautiful — on us.
-            </p>
-
-            <div className="mb-welcome-code" onClick={handleCopyCode}>
-              <span className="mb-welcome-code-text">MAR39</span>
-              <span className="mb-welcome-code-hint">(tap to copy)</span>
+            <div className="mb-welcome-eyebrow">
+              Welcome to <span className="brand-teal">Maria</span>
+              <span className="brand-gold">Beau</span>
             </div>
 
-            <button className="mb-welcome-btn" onClick={handleShopNow}>
+            <h2 className="mb-welcome-title">
+              Enjoy <span className="mb-welcome-highlight">10% Off</span>
+              <br />
+              Your First Order
+            </h2>
+
+            <p className="mb-welcome-subtitle">
+              Sign up &amp; enjoy 10% off your first purchase.
+            </p>
+
+            <div
+              className="mb-welcome-code"
+              onClick={handleCopyCode}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') handleCopyCode(e);
+              }}
+              aria-label="Copy coupon code MAR39"
+            >
+              <span className="mb-welcome-code-text">MAR39</span>
+              <span className="mb-welcome-code-hint">tap to copy</span>
+            </div>
+
+            <button type="button" className="mb-welcome-btn" onClick={handleShopNow}>
               Shop Now
             </button>
           </div>
