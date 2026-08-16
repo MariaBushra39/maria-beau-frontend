@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
+// ✅ Replace this file to change the popup image — nothing else needs to change.
+import welcomeImage from '../assets/welcome-popup.jpg';
+
 // Once shown (or closed, or "Shop Now" clicked), never show again on this device.
 const STORAGE_KEY = 'mariabeau_welcome_popup_shown';
 const SHOW_DELAY_MS = 6000; // ~6 seconds after the visitor lands
@@ -46,42 +49,45 @@ function WelcomePopup() {
         .mb-welcome-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(26, 26, 26, 0.62);
+          background: rgba(26, 26, 26, 0.55);
           z-index: 9999;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 20px;
-          animation: mbWelcomeFadeIn 0.35s ease;
+          animation: mbWelcomeFadeIn 0.3s ease;
         }
         @keyframes mbWelcomeFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
         @keyframes mbWelcomeSlideUp {
-          from { opacity: 0; transform: translateY(16px); }
+          from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .mb-welcome-card {
           background: #ffffff;
-          border-radius: 10px;
-          box-shadow: 0 30px 70px rgba(0,0,0,0.28);
-          max-width: 780px;
+          border-radius: 8px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.22);
+          max-width: 560px;
           width: 100%;
           display: flex;
           overflow: hidden;
           position: relative;
-          animation: mbWelcomeSlideUp 0.4s ease;
+          animation: mbWelcomeSlideUp 0.35s ease;
         }
-        .mb-welcome-image {
-          flex: 0 0 42%;
-          min-height: 380px;
-          background-size: cover;
-          background-position: center top;
+        .mb-welcome-image-wrap {
+          flex: 0 0 40%;
+        }
+        .mb-welcome-image-wrap img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
         }
         .mb-welcome-content {
-          flex: 1;
-          padding: 44px 40px;
+          flex: 0 0 60%;
+          padding: 32px 30px;
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -89,75 +95,77 @@ function WelcomePopup() {
         }
         .mb-welcome-close {
           position: absolute;
-          top: 14px;
-          right: 14px;
-          width: 36px;
-          height: 36px;
+          top: 10px;
+          right: 12px;
+          width: 26px;
+          height: 26px;
           border-radius: 50%;
-          background: rgba(255,255,255,0.92);
-          border: 1px solid #e8dcc4;
+          background: transparent;
+          border: none;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          font-size: 20px;
+          font-size: 18px;
           line-height: 1;
-          color: #1a1a1a;
+          color: #999;
           z-index: 2;
-          transition: background 0.2s ease;
+          transition: color 0.2s ease, background 0.2s ease;
         }
         .mb-welcome-close:hover {
+          color: #1a1a1a;
           background: #faf7f2;
         }
         .mb-welcome-eyebrow {
-          font-size: 12px;
-          letter-spacing: 2px;
+          font-size: 11px;
+          letter-spacing: 1.8px;
           color: #B5762E;
           font-weight: 700;
-          margin-bottom: 16px;
+          margin-bottom: 10px;
           text-transform: uppercase;
         }
         .mb-welcome-title {
           font-family: Georgia, 'Times New Roman', serif;
-          font-size: 27px;
+          font-size: 21px;
           color: #1a1a1a;
-          margin: 0 0 14px 0;
+          margin: 0 0 10px 0;
           line-height: 1.3;
         }
         .mb-welcome-subtitle {
-          font-size: 14.5px;
-          color: #666;
-          line-height: 1.6;
-          margin: 0 0 26px 0;
+          font-size: 13px;
+          color: #777;
+          line-height: 1.5;
+          margin: 0 0 18px 0;
         }
         .mb-welcome-code {
           display: inline-flex;
           align-items: center;
-          gap: 10px;
+          justify-content: center;
+          gap: 8px;
           background: #faf7f2;
-          border: 1.5px dashed #B5762E;
-          border-radius: 6px;
-          padding: 12px 22px;
-          margin: 0 auto 28px auto;
+          border: 1px dashed #B5762E;
+          border-radius: 5px;
+          padding: 9px 16px;
+          margin: 0 auto 18px auto;
           cursor: pointer;
         }
         .mb-welcome-code-text {
-          font-size: 17px;
+          font-size: 14px;
           font-weight: 700;
-          letter-spacing: 1.5px;
+          letter-spacing: 1.2px;
           color: #1a1a1a;
         }
         .mb-welcome-code-hint {
-          font-size: 11px;
-          color: #999;
+          font-size: 10px;
+          color: #aaa;
         }
         .mb-welcome-btn {
           background: #1a1a1a;
           color: #ffffff;
           border: none;
-          padding: 14px 38px;
-          font-size: 13px;
-          letter-spacing: 1.5px;
+          padding: 11px 30px;
+          font-size: 12px;
+          letter-spacing: 1.2px;
           font-weight: 600;
           border-radius: 4px;
           cursor: pointer;
@@ -168,37 +176,33 @@ function WelcomePopup() {
           background: #2FA88E;
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 620px) {
           .mb-welcome-card {
             flex-direction: column;
-            max-width: 420px;
-            max-height: 92vh;
-            overflow-y: auto;
+            max-width: 340px;
           }
-          .mb-welcome-image {
+          .mb-welcome-image-wrap {
             flex: none;
             width: 100%;
-            min-height: 200px;
+            height: 170px;
           }
           .mb-welcome-content {
-            padding: 30px 24px 28px 24px;
+            flex: none;
+            padding: 22px 20px 24px 20px;
           }
-          .mb-welcome-title {
-            font-size: 21px;
-          }
-        }
-        @media (max-width: 380px) {
           .mb-welcome-title {
             font-size: 18px;
           }
+        }
+        @media (max-width: 360px) {
+          .mb-welcome-image-wrap {
+            height: 150px;
+          }
           .mb-welcome-content {
-            padding: 24px 16px 20px 16px;
+            padding: 18px 16px 20px 16px;
           }
-          .mb-welcome-code {
-            padding: 10px 16px;
-          }
-          .mb-welcome-btn {
-            padding: 12px 28px;
+          .mb-welcome-title {
+            font-size: 17px;
           }
         }
       `}</style>
@@ -209,15 +213,12 @@ function WelcomePopup() {
             ×
           </button>
 
-          <div
-            className="mb-welcome-image"
-            style={{
-              backgroundImage: `url(https://images.pexels.com/photos/30156603/pexels-photo-30156603.jpeg?auto=compress&cs=tinysrgb&w=800)`
-            }}
-          />
+          <div className="mb-welcome-image-wrap">
+            <img src={welcomeImage} alt="MariaBeau" />
+          </div>
 
           <div className="mb-welcome-content">
-            <span className="mb-welcome-eyebrow">Welcome to MARIABEAU</span>
+            <span className="mb-welcome-eyebrow">Welcome to MariaBeau</span>
             <h2 className="mb-welcome-title">Enjoy 10% Off<br />Your First Order</h2>
             <p className="mb-welcome-subtitle">
               As a thank you for visiting, treat yourself to something beautiful — on us.
