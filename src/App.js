@@ -50,6 +50,9 @@ import Admin from './pages/Admin';
 import AddProduct from './pages/AddProduct';
 import EditProduct from './pages/EditProduct';
 
+// ===== WELCOME POPUP (✅ NEW) =====
+import WelcomePopup from './components/WelcomePopup';
+
 // ===== MAIN APP CONTENT =====
 function AppContent() {
   const [products, setProducts] = useState([]);
@@ -403,6 +406,9 @@ function AppContent() {
 
   return (
     <div>
+      {/* ✅ NEW: Welcome offer popup — shows once per device after ~6s, independent of announcement bar */}
+      <WelcomePopup />
+
       {/* ===== OFFER BAR ===== */}
       <div className="announcement-bar offer-slider">
         <span key={offerIndex} className="offer-text">
