@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-// this image
+// 🔁 Replace only this image
 import welcomeImage from '../assets/welcome-popup.jpg';
 
 const STORAGE_KEY = 'mariabeau_welcome_popup_shown';
@@ -117,7 +117,7 @@ function WelcomePopup() {
           height: 100%;
           display: block;
           object-fit: cover;
-          object-position: center 15%;
+          object-position: center 15%; /* desktop */
         }
 
         .mb-welcome-close {
@@ -276,7 +276,7 @@ function WelcomePopup() {
           .mb-welcome-subtitle { font-size: 12px; }
         }
 
-        /* MOBILE */
+        /* MOBILE - Option B: head + belly visible */
         @media (max-width: 560px) {
           .mb-welcome-overlay { padding: 16px; }
           .mb-welcome-card {
@@ -284,16 +284,16 @@ function WelcomePopup() {
             display: flex;
             flex-direction: column;
             border-radius: 12px;
-            min-height: 380px; /* ✅ card */
+            min-height: 380px;
           }
           .mb-welcome-image-wrap {
             width: 100%;
-            height: 180px; /* ✅ height */
-            min-height: 180px;
+            height: 200px;          /* ✅ increased */
+            min-height: 200px;
             flex: none;
           }
           .mb-welcome-image-wrap img {
-            object-position: center 30%; /* ✅ face + hands visible */
+            object-position: center 20%;  /* ✅ head + belly */
           }
           .mb-welcome-close {
             top: 10px;
@@ -303,7 +303,7 @@ function WelcomePopup() {
             font-size: 18px;
           }
           .mb-welcome-content {
-            padding: 22px 20px 24px; /* ✅ compress */
+            padding: 22px 20px 24px;
           }
           .mb-welcome-content::before {
             left: 24px;
@@ -338,6 +338,7 @@ function WelcomePopup() {
           }
         }
 
+        /* VERY SMALL - Option B */
         @media (max-width: 380px) {
           .mb-welcome-overlay { padding: 12px; }
           .mb-welcome-card {
@@ -345,11 +346,11 @@ function WelcomePopup() {
             min-height: 350px;
           }
           .mb-welcome-image-wrap {
-            height: 165px;
-            min-height: 165px;
+            height: 185px;          /* ✅ adjusted */
+            min-height: 185px;
           }
           .mb-welcome-image-wrap img {
-            object-position: center 32%;
+            object-position: center 22%;  /* ✅ balance */
           }
           .mb-welcome-content { padding: 18px 16px 20px; }
           .mb-welcome-title { font-size: 21px; }
