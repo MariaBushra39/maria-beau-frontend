@@ -5,24 +5,25 @@ import { toast } from 'react-toastify';
 // ✅ Replace this file to change the popup image — nothing else needs to change.
 import welcomeImage from '../assets/welcome-popup.jpg';
 
-// Once shown (or closed, or "Shop Now" clicked), never show again on this device.
+// Shown once per visit (browser tab/session) — closing it or clicking "Shop Now"
+// hides it for the rest of this visit, but it will show again on the next visit.
 const STORAGE_KEY = 'mariabeau_welcome_popup_shown';
-const SHOW_DELAY_MS = 6000; // ~6 seconds after the visitor lands
+const SHOW_DELAY_MS = 4500; // ~4-5 seconds after the visitor lands
 
 function WelcomePopup() {
   const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Already shown before on this browser — never show again.
-    if (localStorage.getItem(STORAGE_KEY)) return;
+    // Already shown this visit — don't show again until a new tab/session.
+    if (sessionStorage.getItem(STORAGE_KEY)) return;
 
     const timer = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
     return () => clearTimeout(timer);
   }, []);
 
   const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    sessionStorage.setItem(STORAGE_KEY, 'true');
     setVisible(false);
   };
 
@@ -34,8 +35,8 @@ function WelcomePopup() {
   const handleCopyCode = (e) => {
     e.stopPropagation();
     if (navigator.clipboard) {
-      navigator.clipboard.writeText('WELCOME10').then(() => {
-        toast.success('Code copied: WELCOME10');
+      navigator.clipboard.writeText('MAR39').then(() => {
+        toast.success('Code copied: MAR39');
       }).catch(() => {});
     }
   };
@@ -83,6 +84,7 @@ function WelcomePopup() {
           width: 100%;
           height: 100%;
           object-fit: cover;
+          object-position: center 20%;
           display: block;
         }
         .mb-welcome-content {
@@ -113,16 +115,32 @@ function WelcomePopup() {
           transition: color 0.2s ease, background 0.2s ease;
         }
         .mb-welcome-close:hover {
-          color: #1a1a1a;
+          color: #c0392b;
           background: #faf7f2;
         }
         .mb-welcome-eyebrow {
           font-size: 11px;
           letter-spacing: 1.8px;
-          color: #B5762E;
+          color: #888;
           font-weight: 700;
           margin-bottom: 10px;
           text-transform: uppercase;
+        }
+        .mb-welcome-eyebrow .brand-teal {
+          color: #2FA88E;
+        }
+        .mb-welcome-eyebrow .brand-gold {
+          color: #B5762E;
+        }
+        .mb-welcome-highlight {
+          color: #c0392b;
+          display: inline-block;
+          animation: mbWelcomePop 0.5s ease 0.6s both;
+        }
+        @keyframes mbWelcomePop {
+          0% { transform: scale(0.7); opacity: 0; }
+          60% { transform: scale(1.12); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
         }
         .mb-welcome-title {
           font-family: Georgia, 'Times New Roman', serif;
@@ -162,7 +180,7 @@ function WelcomePopup() {
         .mb-welcome-btn {
           background: #1a1a1a;
           color: #ffffff;
-          border: none;
+          border: 1px solid #1a1a1a;
           padding: 11px 30px;
           font-size: 12px;
           letter-spacing: 1.2px;
@@ -170,10 +188,11 @@ function WelcomePopup() {
           border-radius: 4px;
           cursor: pointer;
           align-self: center;
-          transition: background 0.2s ease;
+          transition: background 0.2s ease, color 0.2s ease;
         }
         .mb-welcome-btn:hover {
-          background: #2FA88E;
+          background: #ffffff;
+          color: #1a1a1a;
         }
 
         @media (max-width: 620px) {
@@ -218,14 +237,18 @@ function WelcomePopup() {
           </div>
 
           <div className="mb-welcome-content">
-            <span className="mb-welcome-eyebrow">Welcome to MariaBeau</span>
-            <h2 className="mb-welcome-title">Enjoy 10% Off<br />Your First Order</h2>
+            <span className="mb-welcome-eyebrow">
+              Welcome to <span className="brand-teal">MARIA</span><span className="brand-gold">BEAU</span>
+            </span>
+            <h2 className="mb-welcome-title">
+              Enjoy <span className="mb-welcome-highlight">10% Off</span><br />Your First Order
+            </h2>
             <p className="mb-welcome-subtitle">
               As a thank you for visiting, treat yourself to something beautiful — on us.
             </p>
 
             <div className="mb-welcome-code" onClick={handleCopyCode}>
-              <span className="mb-welcome-code-text">WELCOME10</span>
+              <span className="mb-welcome-code-text">MAR39</span>
               <span className="mb-welcome-code-hint">(tap to copy)</span>
             </div>
 
