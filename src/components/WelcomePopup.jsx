@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-// 🔁 Replace only this image
+// 🔁 Replace
 import welcomeImage from '../assets/welcome-popup.jpg';
 
 const STORAGE_KEY = 'mariabeau_welcome_popup_shown';
@@ -78,11 +78,11 @@ function WelcomePopup() {
           }
         }
 
-        /* ANIMATION FOR 10% OFF */
+        /* ✅ Only scale – no translateY, so alignment with "Enjoy" stays perfect */
         @keyframes discountPop {
-          0% { transform: scale(1) translateY(0); }
-          50% { transform: scale(1.15) translateY(-4px); }
-          100% { transform: scale(1) translateY(0); }
+          0% { transform: scale(1); }
+          50% { transform: scale(1.12); }
+          100% { transform: scale(1); }
         }
 
         .mb-welcome-card {
@@ -118,7 +118,7 @@ function WelcomePopup() {
           height: 100%;
           display: block;
           object-fit: cover;
-          object-position: center 15%;  /* ✅ Face + clothes both visible */
+          object-position: center 15%;  /* Desktop: face + upper body */
         }
 
         .mb-welcome-close {
@@ -173,7 +173,7 @@ function WelcomePopup() {
         .mb-welcome-eyebrow {
           margin: 0 0 20px;
           font-size: 12px;
-          font-weight: 800;          /* ✅ Bold & prominent */
+          font-weight: 800;
           letter-spacing: 3px;
           text-transform: uppercase;
           color: #1a1a1a;
@@ -192,7 +192,6 @@ function WelcomePopup() {
           color: #181818;
         }
 
-        /* ✅ RED + ANIMATED "10% Off" */
         .mb-welcome-highlight {
           color: #c0392b;
           display: inline-block;
@@ -205,7 +204,7 @@ function WelcomePopup() {
           font-size: 13px;
           line-height: 1.7;
           letter-spacing: 0.2px;
-          color: #555;  /* slightly darker for readability */
+          color: #555;
         }
 
         .mb-welcome-code {
@@ -293,8 +292,9 @@ function WelcomePopup() {
             min-height: 155px;
             flex: none;
           }
+          /* eRROR RESOLVE */
           .mb-welcome-image-wrap img {
-            object-position: center 20%;  /* better for mobile */
+            object-position: center 25%;
           }
           .mb-welcome-close {
             top: 10px;
@@ -342,7 +342,7 @@ function WelcomePopup() {
             min-height: 135px;
           }
           .mb-welcome-image-wrap img {
-            object-position: center 25%;
+            object-position: center 28%;
           }
           .mb-welcome-content { padding: 23px 17px 24px; }
           .mb-welcome-title { font-size: 21px; }
