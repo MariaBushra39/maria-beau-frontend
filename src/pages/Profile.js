@@ -5,33 +5,62 @@ import { toast } from 'react-toastify';
 import API_URL from '../api'; // ✅ Added
 import './Profile.css';
 
+// Orders in these statuses can still be cancelled by the customer themselves.
+const CANCELLABLE_STATUSES = ['pending', 'confirmed'];
+
 function Profile() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('orders');
+  const [cancellingId, setCancellingId] = useState(null); // ✅ NEW
+
+  const fetchOrders = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/orders`, { // ✅ Using API_URL
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders(data.data);
+      } else {
+        toast.error(data.message || 'Failed to fetch orders');
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API_URL}/api/orders`, { // ✅ Using API_URL
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.success) {
-          setOrders(data.data);
-        } else {
-          toast.error(data.message || 'Failed to fetch orders');
-        }
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchOrders();
   }, []);
+
+  // ✅ NEW: cancel an order from the customer's side
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order? This cannot be undone.')) return;
+    setCancellingId(orderId);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/orders/${orderId}/cancel`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Order cancelled.');
+        fetchOrders();
+      } else {
+        toast.error(data.message || 'Could not cancel this order.');
+      }
+    } catch (error) {
+      toast.error('Server error. Please try again.');
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   if (loading) {
     return <div className="loading">⏳ LOADING ...</div>;
@@ -65,30 +94,55 @@ function Profile() {
             </div>
           ) : (
             <div className="orders-list">
-              {orders.map(order => (
-                <div key={order.id} className="order-card">
-                  <div className="order-header">
-                    <div>
-                      <span className="order-id">Order #{order.id?.slice(0, 8)}</span>
-                      <span className={`order-status ${order.status}`}>{order.status}</span>
-                    </div>
-                    <span className="order-date">{new Date(order.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <div className="order-items">
-                    {order.items?.map((item, idx) => (
-                      <div key={idx} className="order-item">
-                        <span className="order-item-name">{item.product_name || 'Product'}</span>
-                        <span className="order-item-qty">x{item.quantity}</span>
-                        <span className="order-item-price">Rs. {item.price}</span>
+              {orders.map(order => {
+                const canCancel = CANCELLABLE_STATUSES.includes(order.status);
+                return (
+                  <div key={order.id} className="order-card">
+                    <div className="order-header">
+                      <div>
+                        <span className="order-id">Order #{order.id?.slice(0, 8)}</span>
+                        <span className={`order-status ${order.status}`}>{order.status}</span>
                       </div>
-                    ))}
+                      <span className="order-date">{new Date(order.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div className="order-items">
+                      {order.items?.map((item, idx) => (
+                        <div key={idx} className="order-item">
+                          <span className="order-item-name">{item.product_name || 'Product'}</span>
+                          <span className="order-item-qty">x{item.quantity}</span>
+                          <span className="order-item-price">Rs. {item.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="order-footer">
+                      <span className="order-total">Total: Rs. {order.total_price}</span>
+                      <span className="order-payment">{order.payment_method?.replace(/_/g, ' ')}</span>
+                    </div>
+                    {/* ✅ NEW: cancel button — only shown while the order is still cancellable */}
+                    {canCancel && (
+                      <div style={{ marginTop: '12px', textAlign: 'right' }}>
+                        <button
+                          onClick={() => handleCancelOrder(order.id)}
+                          disabled={cancellingId === order.id}
+                          style={{
+                            background: 'transparent',
+                            border: '1px solid #c0392b',
+                            color: '#c0392b',
+                            padding: '8px 18px',
+                            borderRadius: '4px',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            cursor: cancellingId === order.id ? 'not-allowed' : 'pointer',
+                            opacity: cancellingId === order.id ? 0.6 : 1
+                          }}
+                        >
+                          {cancellingId === order.id ? 'Cancelling...' : 'Cancel Order'}
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="order-footer">
-                    <span className="order-total">Total: Rs. {order.total_price}</span>
-                    <span className="order-payment">{order.payment_method?.replace(/_/g, ' ')}</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

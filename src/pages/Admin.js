@@ -25,16 +25,55 @@ const getItemThumb = (images) => {
   return null;
 };
 
+// ✅ NEW: simple Previous/Next pagination control, reused for Products and Orders
+function Pagination({ currentPage, totalPages, onPageChange }) {
+  if (totalPages <= 1) return null;
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '16px 0' }}>
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        style={{
+          padding: '6px 14px', borderRadius: '4px', border: '1px solid #ddd',
+          background: currentPage === 1 ? '#f5f5f5' : '#fff',
+          cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '13px'
+        }}
+      >
+        ← Previous
+      </button>
+      <span style={{ fontSize: '13px', color: '#555' }}>
+        Page {currentPage} of {totalPages}
+      </span>
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        style={{
+          padding: '6px 14px', borderRadius: '4px', border: '1px solid #ddd',
+          background: currentPage === totalPages ? '#f5f5f5' : '#fff',
+          cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontSize: '13px'
+        }}
+      >
+        Next →
+      </button>
+    </div>
+  );
+}
+
 function Admin() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [reviews, setReviews] = useState([]); // ✅ NEW
+  const [coupons, setCoupons] = useState([]); // ✅ NEW
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('products');
   const [searchTerm, setSearchTerm] = useState('');
   const [orderSearchTerm, setOrderSearchTerm] = useState(''); // ✅ NEW
   const [orderStatusFilter, setOrderStatusFilter] = useState('all'); // ✅ NEW
   const [expandedOrderId, setExpandedOrderId] = useState(null); // ✅ NEW
+  const [productPage, setProductPage] = useState(1); // ✅ NEW
+  const [orderPage, setOrderPage] = useState(1);     // ✅ NEW
+  const ITEMS_PER_PAGE = 10;                          // ✅ NEW
 
   // ===== FETCH PRODUCTS =====
   const fetchProducts = async () => {
@@ -61,15 +100,59 @@ function Admin() {
     }
   };
 
+  // ✅ NEW: FETCH REVIEWS (admin moderation queue)
+  const fetchReviews = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/reviews/admin/all`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) setReviews(data.data);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+  // ✅ NEW: FETCH COUPONS
+  const fetchCoupons = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/coupons/admin/all`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) setCoupons(data.data);
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+    }
+  };
+
+  // ✅ NEW: new coupon form state
+  const [newCoupon, setNewCoupon] = useState({ code: '', type: 'percent', value: '', expires_at: '' });
+  const [creatingCoupon, setCreatingCoupon] = useState(false);
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       await fetchProducts();
       await fetchOrders();
+      await fetchReviews(); // ✅ NEW
+      await fetchCoupons(); // ✅ NEW
       setLoading(false);
     };
     loadData();
   }, []);
+
+  // ✅ NEW: reset to page 1 whenever the search/filter changes, so the user
+  // never lands on a page that's now empty
+  useEffect(() => {
+    setProductPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setOrderPage(1);
+  }, [orderSearchTerm, orderStatusFilter]);
 
   // ===== DELETE PRODUCT =====
   const deleteProduct = async (id) => {
@@ -116,6 +199,122 @@ function Admin() {
     }
   };
 
+  // ✅ NEW: create a coupon
+  const handleCreateCoupon = async (e) => {
+    e.preventDefault();
+    if (!newCoupon.code.trim() || !newCoupon.value) {
+      toast.error('Please fill in the coupon code and value');
+      return;
+    }
+    setCreatingCoupon(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/coupons`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          code: newCoupon.code,
+          type: newCoupon.type,
+          value: newCoupon.value,
+          expires_at: newCoupon.expires_at || null
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Coupon created!');
+        setNewCoupon({ code: '', type: 'percent', value: '', expires_at: '' });
+        fetchCoupons();
+      } else {
+        toast.error(data.message || 'Could not create coupon');
+      }
+    } catch (error) {
+      toast.error('Server error');
+    } finally {
+      setCreatingCoupon(false);
+    }
+  };
+
+  // ✅ NEW: toggle a coupon active/inactive
+  const toggleCoupon = async (couponId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/coupons/${couponId}/toggle`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        fetchCoupons();
+      } else {
+        toast.error(data.message || 'Update failed');
+      }
+    } catch (error) {
+      toast.error('Server error');
+    }
+  };
+
+  // ✅ NEW: delete a coupon
+  const deleteCoupon = async (couponId) => {
+    if (!window.confirm('Delete this coupon? This cannot be undone.')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/coupons/${couponId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Coupon deleted');
+        fetchCoupons();
+      } else {
+        toast.error(data.message || 'Delete failed');
+      }
+    } catch (error) {
+      toast.error('Server error');
+    }
+  };
+
+  // ✅ NEW: approve/reject a review
+  const approveReview = async (reviewId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/reviews/${reviewId}/approve`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Review approved!');
+        fetchReviews();
+      } else {
+        toast.error(data.message || 'Approve failed');
+      }
+    } catch (error) {
+      toast.error('Server error');
+    }
+  };
+
+  const rejectReview = async (reviewId) => {
+    if (!window.confirm('Delete this review? This cannot be undone.')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Review removed');
+        fetchReviews();
+      } else {
+        toast.error(data.message || 'Delete failed');
+      }
+    } catch (error) {
+      toast.error('Server error');
+    }
+  };
+
   // ✅ NEW: expand/collapse an order row to show its products
   const toggleOrderExpand = (orderId) => {
     setExpandedOrderId(prev => (prev === orderId ? null : orderId));
@@ -126,12 +325,22 @@ function Admin() {
     p.category?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // ✅ NEW: paginate products (10 per page)
+  const productTotalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  const paginatedProducts = filteredProducts.slice(
+    (productPage - 1) * ITEMS_PER_PAGE,
+    productPage * ITEMS_PER_PAGE
+  );
+
   const pendingOrders = orders.filter(o => o.status === 'pending').length;
 
   // ✅ NEW: total revenue — cancelled orders excluded since they never completed
   const totalRevenue = orders
     .filter(o => o.status !== 'cancelled')
     .reduce((sum, o) => sum + Number(o.total_price || 0), 0);
+
+  // ✅ NEW: pending reviews count for the tab badge
+  const pendingReviews = reviews.filter(r => !r.approved).length;
 
   // ✅ NEW: filter orders by search term (order ID / customer name / email) and status
   const filteredOrders = orders.filter(order => {
@@ -143,6 +352,13 @@ function Admin() {
       order.user_email?.toLowerCase().includes(term);
     return matchesStatus && matchesSearch;
   });
+
+  // ✅ NEW: paginate orders (10 per page)
+  const orderTotalPages = Math.max(1, Math.ceil(filteredOrders.length / ITEMS_PER_PAGE));
+  const paginatedOrders = filteredOrders.slice(
+    (orderPage - 1) * ITEMS_PER_PAGE,
+    orderPage * ITEMS_PER_PAGE
+  );
 
   if (loading) return <div className="loading">⏳ LOADING ...</div>;
 
@@ -194,6 +410,14 @@ function Admin() {
         <button className={activeTab === 'orders' ? 'active' : ''} onClick={() => setActiveTab('orders')}>
           <FaClipboardList /> Orders
         </button>
+        {/* ✅ NEW: Reviews tab, with a badge showing how many are awaiting approval */}
+        <button className={activeTab === 'reviews' ? 'active' : ''} onClick={() => setActiveTab('reviews')}>
+          <FaClipboardList /> Reviews{pendingReviews > 0 ? ` (${pendingReviews})` : ''}
+        </button>
+        {/* ✅ NEW: Coupons tab */}
+        <button className={activeTab === 'coupons' ? 'active' : ''} onClick={() => setActiveTab('coupons')}>
+          <FaClipboardList /> Coupons
+        </button>
       </div>
 
       {/* ===== PRODUCTS TAB ===== */}
@@ -227,7 +451,7 @@ function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.length === 0 ? (
+                {paginatedProducts.length === 0 ? (
                   <tr>
                     <td colSpan="6">
                       <div className="empty-state">
@@ -237,7 +461,7 @@ function Admin() {
                     </td>
                   </tr>
                 ) : (
-                  filteredProducts.map(product => {
+                  paginatedProducts.map(product => {
                     const thumbSrc = product.images && product.images[0] && product.images[0] !== 'dummy.jpg'
                       ? getImageSrc(product.images[0])
                       : null;
@@ -269,6 +493,8 @@ function Admin() {
               </tbody>
             </table>
           </div>
+          {/* ✅ NEW: pagination controls */}
+          <Pagination currentPage={productPage} totalPages={productTotalPages} onPageChange={setProductPage} />
         </div>
       )}
 
@@ -316,7 +542,7 @@ function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.length === 0 ? (
+                {paginatedOrders.length === 0 ? (
                   <tr>
                     <td colSpan="7">
                       <div className="empty-state">
@@ -326,7 +552,7 @@ function Admin() {
                     </td>
                   </tr>
                 ) : (
-                  filteredOrders.map(order => {
+                  paginatedOrders.map(order => {
                     const isExpanded = expandedOrderId === order.id;
                     const itemCount = Array.isArray(order.items) ? order.items.length : 0;
                     return (
@@ -438,6 +664,174 @@ function Admin() {
               </tbody>
             </table>
           </div>
+          {/* ✅ NEW: pagination controls */}
+          <Pagination currentPage={orderPage} totalPages={orderTotalPages} onPageChange={setOrderPage} />
+        </div>
+      )}
+
+      {/* ===== REVIEWS TAB (✅ NEW) ===== */}
+      {activeTab === 'reviews' && (
+        <div className="admin-orders">
+          {reviews.length === 0 ? (
+            <div className="empty-state">
+              <FaClipboardList size={28} />
+              <p>No reviews yet.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {reviews.map(review => (
+                <div
+                  key={review.id}
+                  style={{
+                    background: review.approved ? '#fff' : '#faf7f2',
+                    border: review.approved ? '1px solid #eee' : '1px solid #e8dcc4',
+                    borderRadius: '6px',
+                    padding: '16px 20px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '14px' }}>{review.product_name || 'Unknown Product'}</div>
+                      <div style={{ fontSize: '13px', color: '#888' }}>
+                        {review.user_name} • {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)} • {new Date(review.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    {!review.approved && (
+                      <span style={{
+                        fontSize: '11px', fontWeight: 'bold', color: '#B5762E',
+                        background: '#B5762E1A', padding: '4px 10px', borderRadius: '12px'
+                      }}>
+                        PENDING
+                      </span>
+                    )}
+                  </div>
+                  {review.comment && (
+                    <p style={{ fontSize: '14px', color: '#444', margin: '8px 0' }}>{review.comment}</p>
+                  )}
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                    {!review.approved && (
+                      <button className="edit-btn" onClick={() => approveReview(review.id)}>
+                        Approve
+                      </button>
+                    )}
+                    <button className="delete-btn" onClick={() => rejectReview(review.id)}>
+                      <FaTrash /> {review.approved ? 'Delete' : 'Reject'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ===== COUPONS TAB (✅ NEW) ===== */}
+      {activeTab === 'coupons' && (
+        <div className="admin-orders">
+          {/* Create new coupon form */}
+          <form
+            onSubmit={handleCreateCoupon}
+            style={{
+              display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'flex-end',
+              background: '#faf7f2', border: '1px solid #e8dcc4', borderRadius: '6px',
+              padding: '16px 20px', marginBottom: '20px'
+            }}
+          >
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '4px' }}>Code</label>
+              <input
+                type="text"
+                placeholder="e.g. EID20"
+                value={newCoupon.code}
+                onChange={(e) => setNewCoupon(prev => ({ ...prev, code: e.target.value }))}
+                style={{ padding: '8px 10px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', width: '140px' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '4px' }}>Type</label>
+              <select
+                value={newCoupon.type}
+                onChange={(e) => setNewCoupon(prev => ({ ...prev, type: e.target.value }))}
+                className="status-select"
+              >
+                <option value="percent">Percentage (%)</option>
+                <option value="flat">Flat (Rs.)</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '4px' }}>
+                Value {newCoupon.type === 'percent' ? '(%)' : '(Rs.)'}
+              </label>
+              <input
+                type="number"
+                min="1"
+                placeholder={newCoupon.type === 'percent' ? '10' : '200'}
+                value={newCoupon.value}
+                onChange={(e) => setNewCoupon(prev => ({ ...prev, value: e.target.value }))}
+                style={{ padding: '8px 10px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', width: '90px' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '4px' }}>Expiry (optional)</label>
+              <input
+                type="date"
+                value={newCoupon.expires_at}
+                onChange={(e) => setNewCoupon(prev => ({ ...prev, expires_at: e.target.value }))}
+                style={{ padding: '8px 10px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px' }}
+              />
+            </div>
+            <button type="submit" className="add-product-btn" disabled={creatingCoupon} style={{ height: '38px' }}>
+              <FaPlus /> {creatingCoupon ? 'Creating...' : 'Add Coupon'}
+            </button>
+          </form>
+
+          {/* Coupons list */}
+          {coupons.length === 0 ? (
+            <div className="empty-state">
+              <FaClipboardList size={28} />
+              <p>No coupons yet. Create your first one above!</p>
+            </div>
+          ) : (
+            <div className="order-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Discount</th>
+                    <th>Expiry</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {coupons.map(coupon => (
+                    <tr key={coupon.id}>
+                      <td style={{ fontWeight: 700 }}>{coupon.code}</td>
+                      <td>
+                        {coupon.type === 'percent' ? `${coupon.value}% off` : `Rs. ${coupon.value} off`}
+                      </td>
+                      <td>
+                        {coupon.expires_at ? new Date(coupon.expires_at).toLocaleDateString() : 'No expiry'}
+                      </td>
+                      <td>
+                        <span className={`status-badge ${coupon.active ? 'delivered' : 'cancelled'}`}>
+                          {coupon.active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="actions-cell">
+                        <button className="edit-btn" onClick={() => toggleCoupon(coupon.id)}>
+                          {coupon.active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button className="delete-btn" onClick={() => deleteCoupon(coupon.id)}>
+                          <FaTrash /> Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
