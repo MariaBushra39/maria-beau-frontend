@@ -53,6 +53,9 @@ import EditProduct from './pages/EditProduct';
 // ===== WELCOME POPUP (✅ NEW) =====
 import WelcomePopup from './components/WelcomePopup';
 
+// ===== WHATSAPP BUTTON (✅ NEW) =====
+import WhatsAppButton from './components/WhatsAppButton';
+
 // ===== MAIN APP CONTENT =====
 function AppContent() {
   const [products, setProducts] = useState([]);
@@ -62,6 +65,8 @@ function AppContent() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [offerIndex, setOfferIndex] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState(''); // ✅ NEW
+  const [subscribing, setSubscribing] = useState(false); // ✅ NEW
   const [searchQuery, setSearchQuery] = useState('');
   const { user, logout } = useAuth();
   const { getTotalItems, addToCart } = useCart();
@@ -186,6 +191,34 @@ function AppContent() {
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
     setSearchQuery('');
+  };
+
+  // ✅ NEW: newsletter subscribe handler
+  const handleNewsletterSubscribe = async () => {
+    const email = newsletterEmail.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    setSubscribing(true);
+    try {
+      const res = await fetch(`${API_URL}/api/newsletter/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message || 'Subscribed successfully!');
+        setNewsletterEmail('');
+      } else {
+        toast.error(data.message || 'Could not subscribe. Please try again.');
+      }
+    } catch (error) {
+      toast.error('Server error. Please try again.');
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   const handleSearchResultClick = (productId) => {
@@ -408,6 +441,9 @@ function AppContent() {
     <div>
       {/* ✅ NEW: Welcome offer popup — shows once per device after ~6s, independent of announcement bar */}
       <WelcomePopup />
+
+      {/* ✅ NEW: Floating WhatsApp chat button, bottom-right on every page */}
+      <WhatsAppButton />
 
       {/* ===== OFFER BAR ===== */}
       <div className="announcement-bar offer-slider">
@@ -744,8 +780,16 @@ function AppContent() {
                 <h2>Stay Updated</h2>
                 <p>Get the latest fashion trends and exclusive offers.</p>
                 <div className="newsletter-form">
-                  <input type="email" placeholder="Enter your email" />
-                  <button>Subscribe →</button>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleNewsletterSubscribe(); }}
+                  />
+                  <button onClick={handleNewsletterSubscribe} disabled={subscribing}>
+                    {subscribing ? 'Subscribing...' : 'Subscribe →'}
+                  </button>
                 </div>
               </div>
             </section>
